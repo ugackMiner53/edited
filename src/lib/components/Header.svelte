@@ -1,14 +1,16 @@
 <style lang="scss">
 
   .header {
+    flex: 2 0 20vh;
     background-color: #efefef;
-    flex: 5 0 auto;
     width: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-direction: column;
-    gap: 1rem;
+    padding: 0.5rem 0 0.5rem 0;
+    gap: 0.5rem;
+    text-align: center;
   }
 
   .pfp {

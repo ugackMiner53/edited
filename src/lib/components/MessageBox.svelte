@@ -2,17 +2,18 @@
 
   .messager {
     background-color: #cacaca;
-    flex: 25 10 auto;
-
+    flex: 3 0 30vh;
+    
     .sendbar {
       display: flex;
       flex-direction: row;
       justify-content: center;
 
-      padding: 0 3rem 0 3rem;
+      padding: 1rem 3rem 0 3rem;
       
       input {
         flex-grow: 1;
+        font-size: 1rem;
       }
 
       button {
