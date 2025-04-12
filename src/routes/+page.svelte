@@ -1,38 +1,31 @@
 <script lang="ts">
-
-  let websocket : WebSocket;
-
-  function enableWebsocket() {
-    websocket = new WebSocket("/ws");
-
-    websocket.onopen = (ev : Event) => {
-      console.log("Connected to server!");
-    }
-
-    websocket.onmessage = (ev : MessageEvent) => {
-      console.log(`Got message ${ev.data} from server`);
-    }
-
-    websocket.onclose = (ev : Event) => {
-      console.log("Disconnected from server!");
-    }
-    
-  }
-
-  function sendMessage() {
-    if (websocket && websocket.readyState == WebSocket.OPEN) {
-      websocket.send("Hello there!");
-    }
-  }
+  import Header from "$lib/components/Header.svelte";
+  import Messages from "$lib/components/Messages.svelte";
+  import MessageBox from "$lib/components/MessageBox.svelte";
 </script>
 
+<style lang="scss">
+
+  :global(html, body) {
+    height: 100%;
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 32px;
+  }
+  
+  .container {
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+</style>
 
 
-<h1>Welcome to a websocket test!</h1>
-<p>Click below to try to enable a websocket..!</p>
+<div class="container">
 
-<button onclick={enableWebsocket} >Enable Websocket</button>
+  <Header />
+  <Messages />
+  <MessageBox />
 
-<p>Current socket state is {websocket?.readyState}</p>
-
-<button onclick={sendMessage}>Send Message</button>
+</div>
