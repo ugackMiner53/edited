@@ -4,18 +4,21 @@
   import MessageBox from "$lib/components/MessageBox.svelte";
   import { type Message } from "$lib/types/Messages";
 
-  const messagest : Message[] = [
-    {from: "me", myself: true, text: "Hello there"},
+  const messagest : Message[] = $state([
     {from: "me", myself: true, text: "How are you?"},
     {from: "bob", myself: false, text: "I'm fine thanks"},
-    {from: "bob", myself: false, text: "How about you?"},
-    {from: "me", myself: true, text: "Hello there, this is a really long message that I wrote that absolutely takes up wayyy too much space (I hope)"},
-    {from: "me", myself: true, text: "Hello there"},
-    {from: "me", myself: true, text: "Hello there"},
-    {from: "me", myself: true, text: "Hello there"},
-    {from: "me", myself: true, text: "Hello there"},
-    
-  ]
+  ])
+
+  let keyboardValue : string = $state("")
+
+  function sendMessage(message : string) {
+    messagest.push({
+      from: "me",
+      myself: true,
+      text: message
+    });
+    keyboardValue = "";
+  }
 </script>
 
 <style lang="scss">
@@ -41,6 +44,6 @@
 
   <Header />
   <Messages messages={messagest} />
-  <MessageBox />
+  <MessageBox bind:keyboardValue={keyboardValue} sendMessage={sendMessage} />
 
 </div>

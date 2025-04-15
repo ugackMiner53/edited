@@ -2,6 +2,18 @@
   import type { Message } from "$lib/types/Messages.ts";
   
   let { messages } : { messages : Message[] } = $props();
+
+  let messageContainer : HTMLDivElement;
+
+  // Scrolls to the bottom whenever the messages get updated
+  $effect(() => {
+    messages.length;
+    messageContainer.scrollTo({
+      top: messageContainer.scrollHeight,
+      behavior: "smooth"
+    })
+  })
+   
 </script>
 
 <style lang="scss">
@@ -28,7 +40,7 @@
   }
 
   .mine {
-    background-color: blue;
+    background-color: #228dff;
     color: white;
     right: 3rem;
     margin-left: auto; /* This positions it on the right side */
@@ -36,13 +48,13 @@
   }
 
   .other {
-    background-color: lightgray;
+    background-color: #e0e0e0;
     margin-left: 1rem;
   }
 
 </style>
 
-<div class="messages">
+<div class="messages" bind:this={messageContainer}>
   {#each messages as message}
     <div class={`message ${message.myself ? "mine" : "other"}`}>
       <p>{message.text}</p>

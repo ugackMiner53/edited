@@ -17,6 +17,7 @@
     padding: 1rem;
     font-size: 2rem;
     border-radius: 100%;
+    aspect-ratio: 1/1;
     background-color: grey;
     color: white;
     font-weight: bold;
