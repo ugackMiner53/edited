@@ -1,8 +1,29 @@
 <script lang="ts">
+  import { browser } from "$app/environment";
 
   let { keyboardValue = $bindable(), sendMessage } : { keyboardValue : string, sendMessage : (message : string) => void} = $props();
   
-  let lastPressedKey: string = $state("");
+  let keyboardElemDict : {[key: string] : HTMLSpanElement}= {};
+
+  function keyPressAnimation(key : string) {
+    if (key in keyboardElemDict) {
+      keyboardElemDict[key].animate([
+        {
+          backgroundColor: "gray",
+          fontSize: "1.2rem",
+          marginTop: "-1rem"
+        },
+        {
+          backgroundColor: "white",
+          fontSize: "1rem",
+          marginTop: "0"
+        }
+      ], {
+        duration: 500
+      })
+    }
+  }
+  
 </script>
 
 
@@ -10,7 +31,11 @@
 
   .messager {
     background-color: #cacaca;
-    flex: 3 0 30vh;
+    flex: 3 0 3vh;
+
+    @media (min-width: 632) {
+      flex: 3 0 30vh;
+    }
     
     .sendbar {
       display: flex;
@@ -51,6 +76,7 @@
     display: flex;
     flex-direction: column;
     margin-top: 1rem;
+    margin-bottom: 1rem;
     gap: 0.25rem;
 
     .row {
@@ -65,34 +91,17 @@
         background-color: white;
         padding: 1rem;
         user-select: none;
-
-
-        &.pressed {
-          animation: key-pressed 500ms;
-        }
       }
     }
   }
 
-  @keyframes key-pressed {
-    0% {
-      background-color: gray;
-      font-size: 1.2rem;
-      margin-top: -1rem;
-    }
-    100% {
-      background-color: white;
-      font-size: 1rem;
-      margin-top: 0;
-    }
-  }
 
 </style>
 
 
 <div class="messager">
   <form class="sendbar" onsubmit={() => sendMessage(keyboardValue)}>
-    <input type="text" placeholder="Send Message" class="messagebox" bind:value={keyboardValue} onkeypress={(keyEvent) => {lastPressedKey = keyEvent.key.toUpperCase()}} />
+    <input type="text" placeholder="Send Message" class="messagebox" bind:value={keyboardValue} onkeypress={(keyEvent) => {keyPressAnimation(keyEvent.key.toUpperCase())}} />
 
     <button type="submit">
       ↑
@@ -100,13 +109,15 @@
   </form>
   
   <!-- {#if !ios} -->
-  <div class="keyboard">
-    {#each ["QWERTYUIOP", "ASDFGHJKL", "ZXCVBNM"] as keyRow}
-      <div class="row">
-        {#each keyRow.split("") as key}
-          <span class={`key ${key === lastPressedKey ? "pressed" : ""}`}>{key}</span>
-        {/each}
-      </div>
-    {/each}
-  </div>
+  {#if (browser && window.screen.width > 632)}
+    <div class="keyboard">
+      {#each ["QWERTYUIOP", "ASDFGHJKL", "ZXCVBNM"] as keyRow}
+        <div class="row">
+          {#each keyRow.split("") as key}
+            <span bind:this={keyboardElemDict[key]} class="key">{key}</span>
+          {/each}
+        </div>
+      {/each}
+    </div>
+  {/if}
 </div>
