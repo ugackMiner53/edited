@@ -28,36 +28,54 @@
     padding: 1rem 0 1rem 0;
   }
 
-  .message {
-    
-    /* width: 5rem;
-    height: 3rem; */
+  .messageContainer {
     max-width: 40%;
+    gap: 0;
+    
+    &.mine {
+      margin-left: auto; /* Positions it on the right side */
+      margin-right: 1rem;
+      right: 3rem;
+    }
+
+    &.other {
+      margin-left: 1rem;
+    }
+  }
+
+  .sender {
+    margin-left: 0.5rem;
+    font-size: 0.5rem;
+    color: #909090;
+  }
+
+  .message {
     width: fit-content;
 
-    padding: 0 1rem 0 1rem;
+    padding: .2rem 1rem .2rem 1rem;
     border-radius: 1rem;
-  }
 
-  .mine {
-    background-color: #228dff;
-    color: white;
-    right: 3rem;
-    margin-left: auto; /* This positions it on the right side */
-    margin-right: 1rem;
-  }
+    &.mine {
+      background-color: #228dff;
+      color: white;
+    }
 
-  .other {
-    background-color: #e0e0e0;
-    margin-left: 1rem;
+    &.other {
+      background-color: #e0e0e0;
+    }
   }
 
 </style>
 
 <div class="messages" bind:this={messageContainer}>
   {#each messages as message}
-    <div class={`message ${message.myself ? "mine" : "other"}`}>
-      <p>{message.text}</p>
+    <div class={`messageContainer ${message.myself ? "mine" : "other"}`}>
+      {#if !message.myself}
+        <span class="sender">{message.from}</span>
+      {/if}
+      <div class={`message ${message.myself ? "mine" : "other"}`}>
+        <p>{message.text}</p>
+      </div>
     </div>
   {/each}
 </div>
