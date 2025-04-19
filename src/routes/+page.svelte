@@ -26,15 +26,46 @@
     max-height: 100vh;
     display: flex;
     flex-direction: column;
+    
+    &:not(.p2p) {
+      --msg-color: #228dff;
+    }
+    &.p2p {
+      --msg-color: #35c959;
+    }
+  }
+
+  .next {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex: 3 0 30vh;
+
+    button {
+      font-size: 2rem;
+      font-weight: bold;
+      border: none;
+      cursor: pointer;
+      padding: 2rem;
+      background-color: #e0e0e0;
+      color: #228dff;
+      border-radius: 1rem;
+    }
   }
 
 </style>
 
 
-<div class="container">
+<div class={`container ${true ? "p2p" : ""}`}>
 
   <Header />
-  <Messages messages={messages} />
-  <MessageBox bind:keyboardValue={keyboardValue} sendMessage={sendMessage} />
+  <Messages messages={GameManager.messages} />
+  {#if true}
+    <MessageBox bind:keyboardValue={keyboardValue} sendMessage={sendMessage} />
+  {:else}
+    <div class="next">
+      <button>Next Conversation</button>
+    </div>
+  {/if}
 
 </div>

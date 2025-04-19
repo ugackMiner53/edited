@@ -51,7 +51,7 @@
       }
 
       button {
-        background-color: #228dff;
+        background-color: var(--msg-color);
         border-radius: 100%;
         width: 2rem;
         height: 2rem;
@@ -108,7 +108,6 @@
     </button>
   </form>
   
-  <!-- {#if !ios} -->
   {#if (browser && window.screen.width > 632)}
     <div class="keyboard">
       {#each ["QWERTYUIOP", "ASDFGHJKL", "ZXCVBNM"] as keyRow}

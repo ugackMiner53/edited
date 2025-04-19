@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { Message } from "$lib/types/Messages.ts";
+  import { type Message } from "$lib/Types";
   
   let { messages } : { messages : Message[] } = $props();
 
@@ -56,7 +56,7 @@
     border-radius: 1rem;
 
     &.mine {
-      background-color: #228dff;
+      background-color: var(--msg-color);
       color: white;
     }
 
@@ -65,17 +65,26 @@
     }
   }
 
+  .infoLine {
+    align-self: center;
+    color: #909090;
+  }
+
 </style>
 
 <div class="messages" bind:this={messageContainer}>
   {#each messages as message}
-    <div class={`messageContainer ${message.myself ? "mine" : "other"}`}>
-      {#if !message.myself}
-        <span class="sender">{message.from}</span>
-      {/if}
-      <div class={`message ${message.myself ? "mine" : "other"}`}>
-        <p>{message.text}</p>
+    {#if message.from != null}
+      <div class={`messageContainer ${message.myself ? "mine" : "other"}`}>
+        {#if !message.myself}
+          <span class="sender">{message.from.name}</span>
+        {/if}
+        <div class={`message ${message.myself ? "mine" : "other"}`}>
+          <p>{message.text}</p>
+        </div>
       </div>
-    </div>
+    {:else}
+      <p class="infoLine">{message.text}</p>
+    {/if}
   {/each}
 </div>
