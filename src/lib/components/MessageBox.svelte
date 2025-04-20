@@ -1,6 +1,4 @@
 <script lang="ts">
-  import { browser } from "$app/environment";
-
   let { keyboardValue = $bindable(), sendMessage } : { keyboardValue : string, sendMessage : (message : string) => void} = $props();
   
   let keyboardElemDict : {[key: string] : HTMLSpanElement}= {};
@@ -32,10 +30,6 @@
   .messager {
     background-color: #cacaca;
     flex: 3 0 3vh;
-
-    @media (min-width: 632) {
-      flex: 3 0 30vh;
-    }
     
     .sendbar {
       display: flex;
@@ -78,6 +72,10 @@
     margin-top: 1rem;
     margin-bottom: 1rem;
     gap: 0.25rem;
+    
+    @media (max-width: 632px) {
+      display: none;
+    }
 
     .row {
       display: flex;
@@ -108,15 +106,13 @@
     </button>
   </form>
   
-  {#if (browser && window.screen.width > 632)}
-    <div class="keyboard">
-      {#each ["QWERTYUIOP", "ASDFGHJKL", "ZXCVBNM"] as keyRow}
-        <div class="row">
-          {#each keyRow.split("") as key}
-            <span bind:this={keyboardElemDict[key]} class="key">{key}</span>
-          {/each}
-        </div>
-      {/each}
-    </div>
-  {/if}
+  <div class="keyboard">
+    {#each ["QWERTYUIOP", "ASDFGHJKL", "ZXCVBNM"] as keyRow}
+      <div class="row">
+        {#each keyRow.split("") as key}
+          <span bind:this={keyboardElemDict[key]} class="key">{key}</span>
+        {/each}
+      </div>
+    {/each}
+  </div>
 </div>

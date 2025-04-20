@@ -4,12 +4,17 @@
   
   function pickBestLetters() {
     const words = name.toUpperCase().split(" ");
+
+    if (name.startsWith("Lobby ")) {
+      return "LB";
+    }
+
     if (words.length > 1) {
-      return words[0][0] + words[1][0];
+      return words[0].charAt(0) + words[1].charAt(0);
     } else if (words[0].length > 1) {
-      return words[0][0] + words[0][1];
+      return words[0].slice(0, 2);
     } else {
-      return words[0][0];
+      return words[0].charAt(0);
     }
   }
 </script>

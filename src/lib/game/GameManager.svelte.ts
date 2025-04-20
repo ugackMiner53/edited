@@ -6,6 +6,8 @@ import WebsocketManager from "$lib/network/WebsocketManager";
 import { CurrentState, type Player, type Message, type UUID, type Chain } from "$lib/Types";
 
 export let currentState = CurrentState.DISCONNECTED;
+export const gcState = $state({ name: "Edited Game" })
+
 let serverManager: AbstractNetworkManager;
 let hosting = false;
 let gameCode: string;
@@ -97,6 +99,11 @@ function bindServerFunctions() {
     console.log("Trying to send self")
     serverManager.sendSelf(myPlayer);
     currentState = CurrentState.LOBBY;
+
+    messages.push(
+      { myself: false, text: `Connected to lobby ${gameCode}`}
+    );
+    gcState.name = `Lobby ${gameCode}`;
   }
 
   serverManager.onPlayerJoin = (newPlayer) => {

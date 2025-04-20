@@ -59,7 +59,7 @@
 
 <div class={`container ${PUBLIC_ADAPTER == "trystero" ? "p2p" : ""}`}>
 
-  <Header name={"Edited Game"} />
+  <Header name={GameManager.gcState.name} />
   <Messages messages={GameManager.messages} />
   {#if true}
     <MessageBox bind:keyboardValue={keyboardValue} sendMessage={sendMessage} />
