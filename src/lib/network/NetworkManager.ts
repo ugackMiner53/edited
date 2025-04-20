@@ -16,6 +16,7 @@ export default interface AbstractNetworkManager {
   sendShow(chainID: UUID): void;
 
   // Recievers
+  onConnect?: () => void;
   onPlayerJoin?: (player: Player) => void;
   onChains?: (chains: Chain[]) => void;
   onQuestion?: (chainID: UUID, question: string) => void;

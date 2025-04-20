@@ -1,4 +1,5 @@
 import { PUBLIC_ADAPTER } from "$env/static/public";
+import { v6 as uuidv6 } from "uuid";
 
 import type AbstractNetworkManager from "$lib/network/NetworkManager";
 import WebsocketManager from "$lib/network/WebsocketManager";
@@ -8,6 +9,7 @@ export let currentState = CurrentState.DISCONNECTED;
 let serverManager: AbstractNetworkManager;
 let hosting = false;
 let gameCode: string;
+const myPlayer : Player = {uuid: <UUID>uuidv6(), name: ""}
 
 // This is only really important for the host to know, clients can desync on this
 const players: Player[] = [];
@@ -19,15 +21,32 @@ let currentChain: unknown = null;
 
 
 export const messages: Message[] = $state([
-  <Message>{ from: { name: "System" }, myself: false, text: "Welcome to Edited! Text a game code to join it, or type CREATE to make your own lobby." }
+  <Message>{ myself: false, text: "Enter your name to start" }
 ]);
 
 export function handleMessage(message: string) {
 
   switch (currentState) {
     case CurrentState.DISCONNECTED: {
-      // Try to connect to the lobby code (if specified)
-      addMessage(message);
+
+      if (myPlayer.name == "") {
+        myPlayer.name = message;
+        messages.pop();
+        messages.push(
+          <Message>{ from: {name: "System"}, myself: false, text: "Welcome to Edited! Text a game code to join it, or type CREATE to make your own lobby." }
+        );
+        return;
+      }
+
+      addMessage(message);      
+
+      if (message.toLowerCase().includes("green") && PUBLIC_ADAPTER == "trystero") {
+        messages.push(
+          <Message>{ from: { name: "System" }, myself: false, text: "You're seeing green bubbles because you're connecting via trystero, a peer-to-peer networking solution. If you'd like blue bubbles and better connections, try hosting Edited yourself!" }
+        );
+        return;
+      }
+
       connectToServer(message);
       break;
     }
@@ -60,11 +79,34 @@ function connectToServer(code: string) {
 
     if (code.toUpperCase() == "CREATE") {
       gameCode = serverManager.createNewRoom();
-    } else {
+    } else if (!Number.isNaN(parseInt(code))) { // Remove this check if you want codes to not be just numbers
       serverManager.connectToRoom(code);
       gameCode = code;
     }
   } else {
     throw Error("Cannot connect with trystero or websockets")
   }
+
+  bindServerFunctions();
 }
+
+function bindServerFunctions() {
+  if (!serverManager) return;
+
+  serverManager.onConnect = () => {
+    console.log("Trying to send self")
+    serverManager.sendSelf(myPlayer);
+  }
+
+  serverManager.onPlayerJoin = (newPlayer) => {
+    players.push(newPlayer);
+
+    if (currentState == CurrentState.LOBBY) {
+      messages.push(
+        { myself: false, text: `${newPlayer.name} joined the group chat` }
+      );
+    }
+  }
+
+}
+

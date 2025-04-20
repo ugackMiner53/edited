@@ -1,3 +1,19 @@
+<script lang="ts">
+
+  const { name } : { name : string } = $props();
+  
+  function pickBestLetters() {
+    const words = name.toUpperCase().split(" ");
+    if (words.length > 1) {
+      return words[0][0] + words[1][0];
+    } else if (words[0].length > 1) {
+      return words[0][0] + words[0][1];
+    } else {
+      return words[0][0];
+    }
+  }
+</script>
+
 <style lang="scss">
 
   .header {
@@ -21,13 +37,14 @@
     background-color: grey;
     color: white;
     font-weight: bold;
+    line-height: 1.5;
   }
 
 </style>
 
 <div class="header">
   
-  <span class="pfp">TL</span>
-  <span class="name">Trenton Long</span>
+  <span class="pfp">{pickBestLetters()}</span>
+  <span class="name">{name}</span>
   
 </div>

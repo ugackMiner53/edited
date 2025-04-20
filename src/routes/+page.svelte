@@ -3,6 +3,7 @@
   import Messages from "$lib/components/Messages.svelte";
   import MessageBox from "$lib/components/MessageBox.svelte";
   import * as GameManager from "$lib/game/GameManager.svelte";
+    import { PUBLIC_ADAPTER } from "$env/static/public";
 
   let keyboardValue : string = $state("")
 
@@ -56,9 +57,9 @@
 </style>
 
 
-<div class={`container ${true ? "p2p" : ""}`}>
+<div class={`container ${PUBLIC_ADAPTER == "trystero" ? "p2p" : ""}`}>
 
-  <Header />
+  <Header name={"Edited Game"} />
   <Messages messages={GameManager.messages} />
   {#if true}
     <MessageBox bind:keyboardValue={keyboardValue} sendMessage={sendMessage} />

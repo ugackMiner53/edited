@@ -4,7 +4,7 @@ import type AbstractNetworkManager from "./NetworkManager";
 import { MessageType } from "./NetworkManager";
 import { type UUID, type Player, type Chain } from "$lib/Types";
 
-type WebsocketMessage = {
+export type WebsocketMessage = {
   type: MessageType,
   data: unknown
 }
@@ -13,6 +13,7 @@ export default class WebsocketManager implements AbstractNetworkManager {
   websocket?: WebSocket;
 
   // Reciever methods that are reassigned by GameManager
+  onConnect?: () => void;
   onPlayerJoin?: (player: Player) => void;
   onChains?: (chains: Chain[]) => void;
   onQuestion?: (chainID: UUID, question: string) => void;
@@ -25,7 +26,11 @@ export default class WebsocketManager implements AbstractNetworkManager {
     this.websocket = new WebSocket("/ws");
 
     return new Promise((resolve, reject) => {
-      this.websocket!.onopen = () => resolve();
+      this.websocket!.onopen = () => {
+        resolve();
+        console.log("You're connected!!!")
+        this.onConnect?.();
+      }
       this.websocket!.onmessage = (event) => this.handleWebsocketMessage(event);
       this.websocket!.onerror = reject;
     })
@@ -54,11 +59,11 @@ export default class WebsocketManager implements AbstractNetworkManager {
   }
 
   createNewRoom() {
-    const code = Math.floor(Math.random() * (10 ** parseInt(PUBLIC_PIN_LENGTH)));
+    const code = Math.floor(Math.random() * (10 ** parseInt(PUBLIC_PIN_LENGTH))).toString();
     this.connectToWebsocket().then(() => {
-      this.sendWebsocketMessage({ type: MessageType.JOIN, data: { code: code, create: true }});
+      this.sendWebsocketMessage({ type: MessageType.JOIN, data: { code: code, create: true } });
     });
-    return code.toString();
+    return code;
   }
 
   connectToRoom(code: string) {
@@ -74,17 +79,17 @@ export default class WebsocketManager implements AbstractNetworkManager {
 
   // Senders
   sendSelf(self: Player) {
-    
+    this.sendWebsocketMessage({ type: MessageType.JOIN, data: self })
   }
 
   sendMessage(message: string) {
-    
+
   }
 
-  sendQuestion(chainID: UUID, question: string) {}
-  sendAnswer(chainID: UUID, question: string) {}
-  sendEdit(chainID: UUID, question: string) {}
-  sendShow(chainID: UUID) {}
+  sendQuestion(chainID: UUID, question: string) { }
+  sendAnswer(chainID: UUID, question: string) { }
+  sendEdit(chainID: UUID, question: string) { }
+  sendShow(chainID: UUID) { }
 
 
 
