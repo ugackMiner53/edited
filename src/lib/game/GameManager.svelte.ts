@@ -9,7 +9,7 @@ export let currentState = CurrentState.DISCONNECTED;
 let serverManager: AbstractNetworkManager;
 let hosting = false;
 let gameCode: string;
-const myPlayer : Player = {uuid: <UUID>uuidv6(), name: ""}
+const myPlayer: Player = { uuid: <UUID>uuidv6(), name: "" }
 
 // This is only really important for the host to know, clients can desync on this
 const players: Player[] = [];
@@ -33,12 +33,12 @@ export function handleMessage(message: string) {
         myPlayer.name = message;
         messages.pop();
         messages.push(
-          <Message>{ from: {name: "System"}, myself: false, text: "Welcome to Edited! Text a game code to join it, or type CREATE to make your own lobby." }
+          <Message>{ from: { name: "System" }, myself: false, text: "Welcome to Edited! Text a game code to join it, or type CREATE to make your own lobby." }
         );
         return;
       }
 
-      addMessage(message);      
+      addMessage(message);
 
       if (message.toLowerCase().includes("green") && PUBLIC_ADAPTER == "trystero") {
         messages.push(
@@ -53,7 +53,7 @@ export function handleMessage(message: string) {
     case CurrentState.LOBBY: {
       // Send message to group in lobby
       addMessage(message);
-      serverManager.sendMessage(message);
+      serverManager.sendMessage(myPlayer, message);
     }
     default: {
       console.error(`Invalid message ${message} sent during ${currentState} state!`);
@@ -96,6 +96,7 @@ function bindServerFunctions() {
   serverManager.onConnect = () => {
     console.log("Trying to send self")
     serverManager.sendSelf(myPlayer);
+    currentState = CurrentState.LOBBY;
   }
 
   serverManager.onPlayerJoin = (newPlayer) => {
@@ -106,6 +107,13 @@ function bindServerFunctions() {
         { myself: false, text: `${newPlayer.name} joined the group chat` }
       );
     }
+  }
+
+  serverManager.onMessage = (player, message) => {
+    console.log(`Recieved message from ${player.name} called ${message}`);
+    messages.push(
+      { from: player, myself: false, text: message }
+    );
   }
 
 }

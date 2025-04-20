@@ -6,7 +6,7 @@ import { type Player, type Chain, type UUID } from "$lib/Types";
 export default interface AbstractNetworkManager {
   createNewRoom(): string;
   connectToRoom(roomPIN: string): void;
-  sendMessage(message: string): void;
+  sendMessage(self: Player, message: string): void;
 
   // Senders
   sendSelf(self: Player): void;
@@ -18,6 +18,7 @@ export default interface AbstractNetworkManager {
   // Recievers
   onConnect?: () => void;
   onPlayerJoin?: (player: Player) => void;
+  onMessage?: (player: Player, message: string) => void;
   onChains?: (chains: Chain[]) => void;
   onQuestion?: (chainID: UUID, question: string) => void;
   onAnswer?: (chainID: UUID, answer: string) => void;
@@ -28,7 +29,9 @@ export default interface AbstractNetworkManager {
 }
 
 export enum MessageType {
+  CONNECT,
   JOIN,
+  MESSAGE,
   QUESTION,
   ANSWER,
   EDIT,

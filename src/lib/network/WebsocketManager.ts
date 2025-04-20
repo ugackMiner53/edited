@@ -15,6 +15,7 @@ export default class WebsocketManager implements AbstractNetworkManager {
   // Reciever methods that are reassigned by GameManager
   onConnect?: () => void;
   onPlayerJoin?: (player: Player) => void;
+  onMessage?: (player: Player, message: string) => void;
   onChains?: (chains: Chain[]) => void;
   onQuestion?: (chainID: UUID, question: string) => void;
   onAnswer?: (chainID: UUID, answer: string) => void;
@@ -26,11 +27,7 @@ export default class WebsocketManager implements AbstractNetworkManager {
     this.websocket = new WebSocket("/ws");
 
     return new Promise((resolve, reject) => {
-      this.websocket!.onopen = () => {
-        resolve();
-        console.log("You're connected!!!")
-        this.onConnect?.();
-      }
+      this.websocket!.onopen = () => resolve();
       this.websocket!.onmessage = (event) => this.handleWebsocketMessage(event);
       this.websocket!.onerror = reject;
     })
@@ -40,8 +37,17 @@ export default class WebsocketManager implements AbstractNetworkManager {
     const message: WebsocketMessage = JSON.parse(messageEvent.data);
 
     switch (message.type) {
+      case MessageType.CONNECT: {
+        this.onConnect?.();
+        break;
+      }
       case MessageType.JOIN: {
         this.onPlayerJoin?.(<Player>message.data);
+        break;
+      }
+      case MessageType.MESSAGE: {
+        const data = <{ from: Player, message: string }>message.data;
+        this.onMessage?.(data.from, data.message);
         break;
       }
       case MessageType.QUESTION: {
@@ -61,14 +67,14 @@ export default class WebsocketManager implements AbstractNetworkManager {
   createNewRoom() {
     const code = Math.floor(Math.random() * (10 ** parseInt(PUBLIC_PIN_LENGTH))).toString();
     this.connectToWebsocket().then(() => {
-      this.sendWebsocketMessage({ type: MessageType.JOIN, data: { code: code, create: true } });
+      this.sendWebsocketMessage({ type: MessageType.CONNECT, data: { code: code, create: true } });
     });
     return code;
   }
 
   connectToRoom(code: string) {
     this.connectToWebsocket().then(() => {
-      this.sendWebsocketMessage({ type: MessageType.JOIN, data: { code: code, create: false } });
+      this.sendWebsocketMessage({ type: MessageType.CONNECT, data: { code: code, create: false } });
     })
   }
 
@@ -82,8 +88,8 @@ export default class WebsocketManager implements AbstractNetworkManager {
     this.sendWebsocketMessage({ type: MessageType.JOIN, data: self })
   }
 
-  sendMessage(message: string) {
-
+  sendMessage(self: Player, message: string) {
+    this.sendWebsocketMessage({ type: MessageType.MESSAGE, data: { from: self, message: message }})
   }
 
   sendQuestion(chainID: UUID, question: string) { }
