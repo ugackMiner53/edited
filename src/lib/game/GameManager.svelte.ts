@@ -8,7 +8,7 @@ import { CurrentState, type Player, type Message, type UUID, type Chain } from "
 export let currentState = CurrentState.DISCONNECTED;
 export const gcState = $state({ name: "Edited Game" })
 
-let serverManager: AbstractNetworkManager;
+let networkManager: AbstractNetworkManager;
 let hosting = false;
 let gameCode: string;
 const myPlayer: Player = { uuid: <UUID>uuidv6(), name: "" }
@@ -55,7 +55,7 @@ export function handleMessage(message: string) {
     case CurrentState.LOBBY: {
       // Send message to group in lobby
       addMessage(message);
-      serverManager.sendMessage(myPlayer, message);
+      networkManager.sendMessage(myPlayer, message);
     }
     default: {
       console.error(`Invalid message ${message} sent during ${currentState} state!`);
@@ -77,12 +77,13 @@ function connectToServer(code: string) {
     // Try connecting via trystero
   } else if (PUBLIC_ADAPTER == "websocket") {
     // Try connecting via websocket
-    serverManager = new WebsocketManager();
+    networkManager = new WebsocketManager();
 
     if (code.toUpperCase() == "CREATE") {
-      gameCode = serverManager.createNewRoom();
+      gameCode = networkManager.createNewRoom();
+      hosting = true;
     } else if (!Number.isNaN(parseInt(code))) { // Remove this check if you want codes to not be just numbers
-      serverManager.connectToRoom(code);
+      networkManager.connectToRoom(code);
       gameCode = code;
     }
   } else {
@@ -93,11 +94,11 @@ function connectToServer(code: string) {
 }
 
 function bindServerFunctions() {
-  if (!serverManager) return;
+  if (!networkManager) return;
 
-  serverManager.onConnect = () => {
+  networkManager.onConnect = () => {
     console.log("Trying to send self")
-    serverManager.sendSelf(myPlayer);
+    networkManager.sendSelf(myPlayer);
     currentState = CurrentState.LOBBY;
 
     messages.push(
@@ -106,7 +107,7 @@ function bindServerFunctions() {
     gcState.name = `Lobby ${gameCode}`;
   }
 
-  serverManager.onPlayerJoin = (newPlayer) => {
+  networkManager.onPlayerJoin = (newPlayer) => {
     players.push(newPlayer);
 
     if (currentState == CurrentState.LOBBY) {
@@ -116,7 +117,7 @@ function bindServerFunctions() {
     }
   }
 
-  serverManager.onMessage = (player, message) => {
+  networkManager.onMessage = (player, message) => {
     console.log(`Recieved message from ${player.name} called ${message}`);
     messages.push(
       { from: player, myself: false, text: message }
@@ -125,3 +126,34 @@ function bindServerFunctions() {
 
 }
 
+
+function createChains() : Chain[] {
+
+  const chains : Chain[] = [];
+  chains.fill({
+    question: {},
+    answer: {},
+    edit: {}
+  }, players.length);
+
+  // Fischer-Yates true random shuffle
+  for (let i = players.length-1; i > 0; i--)
+  {
+    const randIndex = Math.floor(Math.random() * (i + 1));
+    players[i], players[randIndex] = players[randIndex], players[i];
+  }
+
+  
+
+  // Shift array by one
+  players.push(players.shift()!);
+
+  // Shift array by one, again
+  players.push(players.shift()!);
+
+
+
+
+  
+  return [];
+}
