@@ -10,6 +10,7 @@
     }
 
     if (words.length > 1) {
+      if (words[1] == "&") return "G";
       return words[0].charAt(0) + words[1].charAt(0);
     } else if (words[0].length > 1) {
       return words[0].slice(0, 2);

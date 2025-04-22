@@ -63,10 +63,10 @@
   <Header name={GameManager.gcState.name} />
   <Messages messages={GameManager.messages} myId={GameManager.myPlayer.uuid} />
   {#if GameManager.gcState.showKeyboard}
-    <MessageBox bind:keyboardValue={keyboardValue} sendMessage={sendMessage} />
+    <MessageBox bind:keyboardValue={keyboardValue} sendMessage={sendMessage} enableKeyboard={GameManager.gcState.enableKeyboard} />
   {:else}
     <div class="next">
-      <button>Next Conversation</button>
+      <button onclick={GameManager.nextChain}>Next Conversation</button>
     </div>
   {/if}
 

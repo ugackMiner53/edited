@@ -52,14 +52,25 @@ export default class WebsocketManager implements AbstractNetworkManager {
       }
       case MessageType.CHAINS: {
         this.onChains?.(<Chain[]>message.data);
+        break;
       }
+
       case MessageType.QUESTION: {
         const data = <{ chainID: UUID, question: string }>message.data;
         this.onQuestion?.(data.chainID, data.question);
         break;
       }
-      case MessageType.ANSWER:
-      case MessageType.EDIT:
+      case MessageType.ANSWER: {
+        const data = <{ chainID: UUID, answer: string }>message.data;
+        this.onAnswer?.(data.chainID, data.answer);
+        break;
+      }
+      case MessageType.EDIT: {
+        const data = <{ chainID: UUID, edit: string }>message.data;
+        this.onEdit?.(data.chainID, data.edit);
+        break;
+      }
+
       case MessageType.CONTINUE:
       default: {
         console.error(`Message type ${message.type} not expected!`);
@@ -92,19 +103,25 @@ export default class WebsocketManager implements AbstractNetworkManager {
   }
 
   sendMessage(self: Player, message: string) {
-    this.sendWebsocketMessage({ type: MessageType.MESSAGE, data: { from: self, message: message }})
+    this.sendWebsocketMessage({ type: MessageType.MESSAGE, data: { from: self, message: message } })
   }
 
   sendChains(chains: Chain[]) {
-    this.sendWebsocketMessage({ type: MessageType.CHAINS, data: chains})
+    this.sendWebsocketMessage({ type: MessageType.CHAINS, data: chains })
   }
 
   sendQuestion(chainID: UUID, question: string) {
-    this.sendWebsocketMessage({ type: MessageType.QUESTION, data: {chainID, question}});
+    this.sendWebsocketMessage({ type: MessageType.QUESTION, data: { chainID, question } });
   }
 
-  sendAnswer(chainID: UUID, question: string) { }
-  sendEdit(chainID: UUID, question: string) { }
+  sendAnswer(chainID: UUID, answer: string) {
+    this.sendWebsocketMessage({ type: MessageType.ANSWER, data: { chainID, answer } });
+  }
+
+  sendEdit(chainID: UUID, edit: string) {
+    this.sendWebsocketMessage({ type: MessageType.EDIT, data: { chainID, edit } });
+  }
+
   sendShow(chainID: UUID) { }
 
 

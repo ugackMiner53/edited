@@ -1,7 +1,7 @@
 <script lang="ts">
-  let { keyboardValue = $bindable(), sendMessage } : { keyboardValue : string, sendMessage : (message : string) => void} = $props();
+  let { keyboardValue = $bindable(), sendMessage, enableKeyboard: enableKeyboard } : { keyboardValue : string, sendMessage : (message : string) => void, enableKeyboard: boolean} = $props();
   
-  let keyboardElemDict : {[key: string] : HTMLSpanElement}= {};
+  let keyboardElemDict : {[key: string] : HTMLSpanElement} = $state({});
 
   function keyPressAnimation(key : string) {
     if (key in keyboardElemDict) {
@@ -99,9 +99,9 @@
 
 <div class="messager">
   <form class="sendbar" onsubmit={() => sendMessage(keyboardValue)}>
-    <input type="text" placeholder="Send Message" class="messagebox" bind:value={keyboardValue} onkeypress={(keyEvent) => {keyPressAnimation(keyEvent.key.toUpperCase())}} />
+    <input type="text" placeholder="Send Message" class="messagebox" disabled={!enableKeyboard} bind:value={keyboardValue} onkeypress={(keyEvent) => {keyPressAnimation(keyEvent.key.toUpperCase())}} />
 
-    <button type="submit">
+    <button type="submit" disabled={!enableKeyboard}>
       ↑
     </button>
   </form>

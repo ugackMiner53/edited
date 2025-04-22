@@ -12,8 +12,8 @@ export default interface AbstractNetworkManager {
   sendSelf(self: Player): void;
   sendChains(chains: Chain[]) : void;
   sendQuestion(chainID: UUID, question: string): void;
-  sendAnswer(chainID: UUID, question: string): void;
-  sendEdit(chainID: UUID, question: string): void;
+  sendAnswer(chainID: UUID, answer: string): void;
+  sendEdit(chainID: UUID, edit: string): void;
   sendShow(chainID: UUID): void;
 
   // Recievers
