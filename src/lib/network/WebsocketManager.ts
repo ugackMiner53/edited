@@ -96,10 +96,13 @@ export default class WebsocketManager implements AbstractNetworkManager {
   }
 
   sendChains(chains: Chain[]) {
-    this.sendWebsocketMessage({ type: MessageType.CHAINS, data: {chains: chains}})
+    this.sendWebsocketMessage({ type: MessageType.CHAINS, data: chains})
   }
 
-  sendQuestion(chainID: UUID, question: string) { }
+  sendQuestion(chainID: UUID, question: string) {
+    this.sendWebsocketMessage({ type: MessageType.QUESTION, data: {chainID, question}});
+  }
+
   sendAnswer(chainID: UUID, question: string) { }
   sendEdit(chainID: UUID, question: string) { }
   sendShow(chainID: UUID) { }

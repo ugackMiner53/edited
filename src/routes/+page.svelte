@@ -62,7 +62,7 @@
 
   <Header name={GameManager.gcState.name} />
   <Messages messages={GameManager.messages} myId={GameManager.myPlayer.uuid} />
-  {#if true}
+  {#if GameManager.gcState.showKeyboard}
     <MessageBox bind:keyboardValue={keyboardValue} sendMessage={sendMessage} />
   {:else}
     <div class="next">

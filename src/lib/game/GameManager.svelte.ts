@@ -6,7 +6,7 @@ import WebsocketManager from "$lib/network/WebsocketManager";
 import { CurrentState, type Player, type Message, type UUID, type Chain } from "$lib/Types";
 
 export let currentState = CurrentState.DISCONNECTED;
-export const gcState = $state({ name: "Edited Game" })
+export const gcState = $state({ name: "Edited Game", showKeyboard: true })
 
 let networkManager: AbstractNetworkManager;
 let hosting = false;
@@ -17,8 +17,8 @@ export const myPlayer: Player = { uuid: <UUID>uuidv6(), name: "" }
 const players: Player[] = [myPlayer];
 
 let chains: Chain[] = [];
-
-let currentChain: unknown = null;
+let myChains: Chain[];
+let currentChain: null|Chain;
 
 
 export const messages: Message[] = $state([
@@ -58,7 +58,7 @@ export function handleMessage(message: string) {
       if (message.toUpperCase() == "START") {
         if (players.length > 2) {
           // Start the game
-          chains = createChains();
+          handleChains(createChains())
           networkManager.sendChains(chains);
         } else {
           messages.push(
@@ -69,7 +69,15 @@ export function handleMessage(message: string) {
       }
 
       networkManager.sendMessage(myPlayer, message);
+      break;
     }
+    case CurrentState.QUESTION: {
+      addMessage(message);
+      networkManager.sendQuestion(myChains[0].chainId, message);
+      updateGCState(false);
+      break;
+    }
+    
     default: {
       console.error(`Invalid message ${message} sent during ${currentState} state!`);
     }
@@ -142,15 +150,12 @@ function bindServerFunctions() {
     );
   }
 
-  networkManager.onChains = (remoteChains) => {
-    chains = remoteChains;
-    currentState = CurrentState.QUESTION;
-    console.log("RECIEVED CHAINS!")
-    console.log(chains);
-    // currentChain 
-    // Get current chain here
-  }
+  networkManager.onChains = handleChains;
 
+  networkManager.onQuestion = (chainId, message) => {
+    // Change chains to use a Map, probably a better idea
+    chains.find(chain => chain.chainId == chainId)!.question.text = message;
+  }
 }
 
 
@@ -158,6 +163,7 @@ function createChains(): Chain[] {
 
   const chains: Chain[] = Array.from({ length: players.length }, () => {
     return {
+      chainId: <UUID>uuidv6(),
       question: {},
       answer: {},
       edit: {}
@@ -185,4 +191,33 @@ function createChains(): Chain[] {
   }
 
   return chains;
+}
+
+function handleChains(newChains: Chain[]) {
+  chains = newChains;
+  myChains = findMyChains(chains);
+  currentChain = myChains[0];
+  currentState = CurrentState.QUESTION;
+  messages.length = 0;
+  updateGCState();
+}
+
+function findMyChains(chains: Chain[]): Chain[] {
+  const myChains = Array(3);
+  chains.forEach(chain => {
+    if (chain.question.from?.uuid == myPlayer.uuid) myChains[0] = chain;
+    if (chain.answer.from?.uuid == myPlayer.uuid) myChains[1] = chain;
+    if (chain.edit.from?.uuid == myPlayer.uuid) myChains[2] = chain;
+  })
+  return myChains;
+}
+
+function updateGCState(showKeyboard = true) {
+  if (!currentChain) return;
+
+  if (currentState == CurrentState.QUESTION) gcState.name = currentChain.answer.from!.name;
+  if (currentState == CurrentState.ANSWER) gcState.name = currentChain.question.from!.name;
+  if (currentState == CurrentState.EDIT) gcState.name = `${currentChain.question.from!.name} & ${currentChain.answer.from!.name}`;
+
+  gcState.showKeyboard = showKeyboard;
 }

@@ -7,6 +7,7 @@ export type Player = {
 }
 
 export type Chain = {
+  chainId: UUID;
   question : Message;
   answer : Message;
   edit : Message;
