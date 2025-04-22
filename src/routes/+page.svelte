@@ -1,9 +1,10 @@
 <script lang="ts">
+  import { PUBLIC_ADAPTER } from "$env/static/public";
+
   import Header from "$lib/components/Header.svelte";
   import Messages from "$lib/components/Messages.svelte";
   import MessageBox from "$lib/components/MessageBox.svelte";
   import * as GameManager from "$lib/game/GameManager.svelte";
-    import { PUBLIC_ADAPTER } from "$env/static/public";
 
   let keyboardValue : string = $state("")
 
@@ -60,7 +61,7 @@
 <div class={`container ${PUBLIC_ADAPTER == "trystero" ? "p2p" : ""}`}>
 
   <Header name={GameManager.gcState.name} />
-  <Messages messages={GameManager.messages} />
+  <Messages messages={GameManager.messages} myId={GameManager.myPlayer.uuid} />
   {#if true}
     <MessageBox bind:keyboardValue={keyboardValue} sendMessage={sendMessage} />
   {:else}

@@ -11,19 +11,18 @@ export const gcState = $state({ name: "Edited Game" })
 let networkManager: AbstractNetworkManager;
 let hosting = false;
 let gameCode: string;
-const myPlayer: Player = { uuid: <UUID>uuidv6(), name: "" }
+export const myPlayer: Player = { uuid: <UUID>uuidv6(), name: "" }
 
 // This is only really important for the host to know, clients can desync on this
-const players: Player[] = [];
+const players: Player[] = [myPlayer];
 
-const chains: Chain[] = [];
-const chainsToShow: UUID[] = [];
+let chains: Chain[] = [];
 
 let currentChain: unknown = null;
 
 
 export const messages: Message[] = $state([
-  <Message>{ myself: false, text: "Enter your name to start" }
+  <Message>{ text: "Enter your name to start" }
 ]);
 
 export function handleMessage(message: string) {
@@ -35,7 +34,7 @@ export function handleMessage(message: string) {
         myPlayer.name = message;
         messages.pop();
         messages.push(
-          <Message>{ from: { name: "System" }, myself: false, text: "Welcome to Edited! Text a game code to join it, or type CREATE to make your own lobby." }
+          { from: <Player>{ name: "System" }, text: "Welcome to Edited! Text a game code to join it, or type CREATE to make your own lobby." }
         );
         return;
       }
@@ -44,7 +43,7 @@ export function handleMessage(message: string) {
 
       if (message.toLowerCase().includes("green") && PUBLIC_ADAPTER == "trystero") {
         messages.push(
-          <Message>{ from: { name: "System" }, myself: false, text: "You're seeing green bubbles because you're connecting via trystero, a peer-to-peer networking solution. If you'd like blue bubbles and better connections, try hosting Edited yourself!" }
+          { from: <Player>{ name: "System" }, text: "You're seeing green bubbles because you're connecting via trystero, a peer-to-peer networking solution. If you'd like blue bubbles and better connections, try hosting Edited yourself!" }
         );
         return;
       }
@@ -55,6 +54,20 @@ export function handleMessage(message: string) {
     case CurrentState.LOBBY: {
       // Send message to group in lobby
       addMessage(message);
+
+      if (message.toUpperCase() == "START") {
+        if (players.length > 2) {
+          // Start the game
+          chains = createChains();
+          networkManager.sendChains(chains);
+        } else {
+          messages.push(
+            { from: <Player>{ name: "System" }, text: `You need more players to start! You currently have ${players.length}/3 players in your lobby!` }
+          );
+        }
+        return;
+      }
+
       networkManager.sendMessage(myPlayer, message);
     }
     default: {
@@ -65,8 +78,7 @@ export function handleMessage(message: string) {
 
 function addMessage(message: string) {
   messages.push({
-    from: <Player>{},
-    myself: true,
+    from: myPlayer,
     text: message
   });
 }
@@ -102,8 +114,14 @@ function bindServerFunctions() {
     currentState = CurrentState.LOBBY;
 
     messages.push(
-      { myself: false, text: `Connected to lobby ${gameCode}`}
+      { text: `Connected to lobby ${gameCode}` }
     );
+
+    if (hosting) {
+      messages.push(
+        { text: "You're hosting the lobby! To start the game, text START, or text CONFIG to edit the settings.", from: <Player>{ name: "System" } }
+      );
+    }
     gcState.name = `Lobby ${gameCode}`;
   }
 
@@ -112,7 +130,7 @@ function bindServerFunctions() {
 
     if (currentState == CurrentState.LOBBY) {
       messages.push(
-        { myself: false, text: `${newPlayer.name} joined the group chat` }
+        { text: `${newPlayer.name} joined the group chat` }
       );
     }
   }
@@ -120,40 +138,51 @@ function bindServerFunctions() {
   networkManager.onMessage = (player, message) => {
     console.log(`Recieved message from ${player.name} called ${message}`);
     messages.push(
-      { from: player, myself: false, text: message }
+      { from: player, text: message }
     );
+  }
+
+  networkManager.onChains = (remoteChains) => {
+    chains = remoteChains;
+    currentState = CurrentState.QUESTION;
+    console.log("RECIEVED CHAINS!")
+    console.log(chains);
+    // currentChain 
+    // Get current chain here
   }
 
 }
 
 
-function createChains() : Chain[] {
+function createChains(): Chain[] {
 
-  const chains : Chain[] = [];
-  chains.fill({
-    question: {},
-    answer: {},
-    edit: {}
-  }, players.length);
+  const chains: Chain[] = Array.from({ length: players.length }, () => {
+    return {
+      question: {},
+      answer: {},
+      edit: {}
+    }
+  });
 
   // Fischer-Yates true random shuffle
-  for (let i = players.length-1; i > 0; i--)
-  {
+  for (let i = players.length - 1; i > 0; i--) {
     const randIndex = Math.floor(Math.random() * (i + 1));
-    players[i], players[randIndex] = players[randIndex], players[i];
+    const temp = players[randIndex];
+    players[randIndex] = players[i];
+    players[i] = temp;
   }
 
-  
+  const order: ("question" | "answer" | "edit")[] = ["question", "answer", "edit"]
 
-  // Shift array by one
-  players.push(players.shift()!);
+  for (let i = 0; i <= 2; i++) {
 
-  // Shift array by one, again
-  players.push(players.shift()!);
+    chains.forEach((chain, index) => {
+      chain[order[i]].from = players[index];
+    })
 
+    // Shift array by one for next loop
+    players.push(players.shift()!);
+  }
 
-
-
-  
-  return [];
+  return chains;
 }

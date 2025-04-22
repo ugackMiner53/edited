@@ -50,6 +50,9 @@ export default class WebsocketManager implements AbstractNetworkManager {
         this.onMessage?.(data.from, data.message);
         break;
       }
+      case MessageType.CHAINS: {
+        this.onChains?.(<Chain[]>message.data);
+      }
       case MessageType.QUESTION: {
         const data = <{ chainID: UUID, question: string }>message.data;
         this.onQuestion?.(data.chainID, data.question);
@@ -93,7 +96,7 @@ export default class WebsocketManager implements AbstractNetworkManager {
   }
 
   sendChains(chains: Chain[]) {
-    this.sendWebsocketMessage({ type: MessageType.CHAINS }, data: {})
+    this.sendWebsocketMessage({ type: MessageType.CHAINS, data: {chains: chains}})
   }
 
   sendQuestion(chainID: UUID, question: string) { }
