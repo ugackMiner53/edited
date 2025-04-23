@@ -5,8 +5,11 @@
   import Messages from "$lib/components/Messages.svelte";
   import MessageBox from "$lib/components/MessageBox.svelte";
   import * as GameManager from "$lib/game/GameManager.svelte";
+    import { CurrentState } from "$lib/Types";
 
   let keyboardValue : string = $state("")
+
+  let topMessage = $derived((GameManager.currentState == CurrentState.EDIT && keyboardValue != "") ? keyboardValue : null);
 
   function sendMessage(message : string) {
     GameManager.handleMessage(message);
@@ -61,7 +64,7 @@
 <div class={`container ${PUBLIC_ADAPTER == "trystero" ? "p2p" : ""}`}>
 
   <Header name={GameManager.gcState.name} />
-  <Messages messages={GameManager.messages} myId={GameManager.myPlayer.uuid} />
+  <Messages messages={GameManager.messages} myId={GameManager.myPlayer.uuid} keyboardValue={topMessage} />
   {#if GameManager.gcState.showKeyboard}
     <MessageBox bind:keyboardValue={keyboardValue} sendMessage={sendMessage} enableKeyboard={GameManager.gcState.enableKeyboard} />
   {:else}

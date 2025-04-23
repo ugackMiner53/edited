@@ -1,7 +1,7 @@
 <script lang="ts">
   import { type Message, type UUID } from "$lib/Types";
 
-  let { messages, myId }: { messages: Message[]; myId: UUID } = $props();
+  let { messages, myId, keyboardValue }: { messages: Message[]; myId: UUID, keyboardValue: string|null } = $props();
 
   let messageContainer: HTMLDivElement;
 
@@ -21,14 +21,14 @@
 </script>
 
 <div class="messages" bind:this={messageContainer}>
-  {#each messages as message}
+  {#each messages as message, index}
     {#if message.from != null}
       <div class={`messageContainer ${isMine(message) ? "mine" : "other"}`}>
         {#if !isMine(message)}
           <span class="sender">{message.from.name}</span>
         {/if}
         <div class={`message ${isMine(message) ? "mine" : "other"}`}>
-          <p>{message.text}</p>
+          <p>{index == 0 ? (keyboardValue ?? message.text) : message.text}</p>
         </div>
       </div>
     {:else}
