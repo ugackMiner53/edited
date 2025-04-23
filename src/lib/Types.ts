@@ -24,6 +24,12 @@ export enum CurrentState {
   QUESTION,
   ANSWER,
   EDIT,
+  WAIT,
   VIEW
 }
 
+export enum KeyboardState {
+  SHOWN,
+  BUTTON,
+  NONE
+}

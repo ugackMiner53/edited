@@ -3,11 +3,11 @@ import { v6 as uuidv6 } from "uuid";
 
 import type AbstractNetworkManager from "$lib/network/NetworkManager";
 import WebsocketManager from "$lib/network/WebsocketManager";
-import { CurrentState, type Player, type Message, type UUID, type Chain } from "$lib/Types";
+import { CurrentState, type Player, type Message, type UUID, type Chain, KeyboardState } from "$lib/Types";
 
 export let currentState = CurrentState.DISCONNECTED;
-export const gcState = $state({ name: "Edited Game", showKeyboard: true, enableKeyboard: true })
-
+export const gcState = $state({ name: "Edited Game", keyboardState: KeyboardState.SHOWN, enableKeyboard: true })
+// , showKeyboard: true, enableKeyboard: true
 let networkManager: AbstractNetworkManager;
 let hosting = false;
 let gameCode: string;
@@ -17,6 +17,7 @@ export const myPlayer: Player = { uuid: <UUID>uuidv6(), name: "" }
 const players: Player[] = [myPlayer];
 
 let chains = new Map<UUID, Chain>();
+let finishedChains = 0;
 let myChains: Chain[];
 let currentChain: null | Chain;
 
@@ -81,22 +82,29 @@ export function handleMessage(message: string) {
 
     case CurrentState.QUESTION: {
       addMessage(message);
-      gcState.showKeyboard = false;
+      gcState.keyboardState = KeyboardState.BUTTON;
       if (currentChain?.chainId) networkManager.sendQuestion(currentChain.chainId, message);
       break;
     }
 
     case CurrentState.ANSWER: {
       addMessage(message);
-      gcState.showKeyboard = false;
+      gcState.keyboardState = KeyboardState.BUTTON;
       if (currentChain?.chainId) networkManager.sendAnswer(currentChain.chainId, message);
       break;
     }
 
     case CurrentState.EDIT: {
       messages[0].text = message;
-      gcState.showKeyboard = false;
+      gcState.keyboardState = KeyboardState.BUTTON;
       if (currentChain?.chainId) networkManager.sendEdit(currentChain.chainId, message);
+      finishedChains++;
+      break;
+    }
+
+    case CurrentState.WAIT: {
+      addMessage(message);
+      networkManager.sendMessage(myPlayer, message);
       break;
     }
 
@@ -159,7 +167,7 @@ function bindServerFunctions() {
         { text: "You're hosting the lobby! To start the game, text START, or text CONFIG to edit the settings.", from: <Player>{ name: "System" } }
       );
     }
-    gcState.name = `Lobby ${gameCode}`;
+    updateGCState();
   }
 
   // When someone else joins, store and display message.
@@ -175,9 +183,11 @@ function bindServerFunctions() {
 
   // When sending a lobby message, display message.
   networkManager.onMessage = (player, message) => {
-    messages.push(
-      { from: player, text: message }
-    );
+    if (currentState == CurrentState.LOBBY || currentState == CurrentState.WAIT) {
+      messages.push(
+        { from: player, text: message }
+      );
+    }
   }
 
   // Callback for creating chains when recieving from host.
@@ -199,17 +209,25 @@ function bindServerFunctions() {
   networkManager.onEdit = (chainId, message) => {
     if (chains.has(chainId)) chains.get(chainId)!.edit.text = message;
     if (chainId === currentChain?.chainId) updateMessages();
+    finishedChains++;
   }
 }
 
 
 export function nextChain() {
+  if (currentState == CurrentState.VIEW) {
+
+    return;
+  }
+  
   if (myChains.length > 0) {
     currentChain = myChains.shift()!;
+  } else {
+    currentChain = null;
   }
 
   currentState++;
-  gcState.showKeyboard = true;
+  gcState.keyboardState = KeyboardState.SHOWN;
   updateMessages();
 }
 
@@ -225,16 +243,34 @@ function updateGCState() {
   
   if (!currentChain) return;
 
-  if (currentState == CurrentState.QUESTION) gcState.name = currentChain.answer.from!.name;
-  
-  if (currentState == CurrentState.ANSWER) {
-    gcState.name = currentChain.question.from!.name;
-    gcState.enableKeyboard = currentChain.question.text != null;
-  }
-  
-  if (currentState == CurrentState.EDIT) {
-    gcState.name = `${currentChain.question.from!.name} & ${currentChain.answer.from!.name}`;
-    gcState.enableKeyboard = currentChain.question.text != null && currentChain.answer.text != null;
+  switch (currentState) {
+    case CurrentState.QUESTION: {
+      gcState.name = currentChain.answer.from!.name;
+      break;
+    }
+
+    case CurrentState.ANSWER: {
+      gcState.name = currentChain.question.from!.name;
+      gcState.enableKeyboard = currentChain.question.text != null;
+      break;
+    }
+
+    case CurrentState.EDIT: {
+      gcState.name = `${currentChain.question.from!.name} & ${currentChain.answer.from!.name}`;
+      gcState.enableKeyboard = currentChain.question.text != null && currentChain.answer.text != null;
+      break;
+    }
+
+    case CurrentState.LOBBY:
+    case CurrentState.WAIT: {
+      gcState.name = `Lobby ${gameCode}`;
+      gcState.enableKeyboard = true;
+      break;
+    }
+
+    case CurrentState.VIEW: {
+      gcState.enableKeyboard = false;
+    }
   }
 }
 
@@ -280,7 +316,7 @@ function handleChains(newChains: Chain[]) {
   })
   myChains = findMyChains(newChains);
   currentChain = myChains.shift()!;
-  console.log(`Starting chain is ${currentChain.chainId}`);
+  finishedChains = 0;
   currentState = CurrentState.QUESTION;
   messages.length = 0;
   updateGCState();
@@ -296,4 +332,12 @@ function findMyChains(chains: Chain[]): Chain[] {
     if (chain.edit.from?.uuid == myPlayer.uuid) myChains[2] = chain;
   })
   return myChains;
+}
+
+function checkChainsFinished() {
+  if (finishedChains >= chains.size) {
+    // Game has finished
+    currentState = CurrentState.VIEW;
+    messages.push({ text: "Now revealing messages" });
+  }
 }

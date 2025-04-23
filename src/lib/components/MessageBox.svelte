@@ -63,6 +63,7 @@
     height: 2rem;
     border-radius: 1rem;
     width: 50%;
+    margin-bottom: 1rem;
     padding: 0 0.5rem 0 0.5rem;
   }
 
@@ -73,7 +74,7 @@
     margin-bottom: 1rem;
     gap: 0.25rem;
     
-    @media (max-width: 632px) {
+    @media (max-width: 632px) or (max-height: 720px) {
       display: none;
     }
 
