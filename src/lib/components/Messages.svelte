@@ -28,7 +28,7 @@
           <span class="sender">{message.from.name}</span>
         {/if}
         <div class={`message ${isMine(message) ? "mine" : "other"}`}>
-          <p>{index == 0 ? (keyboardValue ?? message.text) : message.text}</p>
+          <p>{index == 1 ? (keyboardValue ?? message.text) : message.text}</p>
         </div>
       </div>
     {:else}

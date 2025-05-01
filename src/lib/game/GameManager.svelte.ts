@@ -1,9 +1,3 @@
-// VERY IMPORTANT TODO: REFACTOR HOST AND CLIENT TOGETHER
-// THE HOST CURRENTLY DUPLICATES A LOT OF CODE FROM CLIENT
-// AND THE TWO ARE LIKELY TO DESYNC
-// CREATE GENERIC METHODS INSTEAD
-
-
 import { PUBLIC_ADAPTER } from "$env/static/public";
 import { v6 as uuidv6 } from "uuid";
 
@@ -71,6 +65,7 @@ export function handleMessage(message: string) {
       if (message.toUpperCase() == "START" && hosting) {
         if (players.length > 2) {
           // Start the game
+          chains.clear();
           const newChains = createChains();
           handleChains(newChains)
           networkManager.sendChains(newChains);
@@ -103,7 +98,7 @@ export function handleMessage(message: string) {
     }
 
     case CurrentState.EDIT: {
-      messages[0].text = message;
+      messages[1].text = message;
       gcState.keyboardState = KeyboardState.BUTTON;
       if (currentChain?.chainId) networkManager.sendEdit(currentChain.chainId, message);
       if (currentChain) currentChain.edit.text = message;
@@ -266,7 +261,6 @@ export function nextChain() {
   }
 
   if (currentState == CurrentState.EDIT) {
-    console.log("Trying to add welcome message to WAIT message")
     messages.length = 0;
     messages.push({ text: "Welcome back to the lobby. The game will continue when everyone finishes." });
     currentState = CurrentState.WAIT;
@@ -293,8 +287,25 @@ async function showChainAnimation(chain : Chain) {
 
 function updateMessages() {
   messages.length = 0;
+
+  switch (currentState) {
+    case CurrentState.QUESTION: {
+      messages.push({ text: `Ask ${currentChain?.answer.from?.name ?? "them"} a question!` })
+      break;
+    }
+    case CurrentState.ANSWER: {
+      messages.push({ text: `Answer ${currentChain?.question.from?.name ?? "the sender"}'s question!` })
+      break;
+    }
+    case CurrentState.EDIT: {
+      messages.push({ text: `Replace ${currentChain?.question.from?.name}'s question to make ${currentChain?.answer.from?.name} look bad!` })
+      break;
+    }
+  }
+  
   if (currentChain?.question.text) messages.push(currentChain.question);
   if (currentChain?.answer.text) messages.push(currentChain.answer);
+
   updateGCState();
 }
 
@@ -324,13 +335,13 @@ function updateGCState() {
     case CurrentState.LOBBY:
     case CurrentState.WAIT: {
       gcState.name = `Lobby ${gameCode}`;
-      gcState.keyboardState =KeyboardState.SHOWN;
+      gcState.keyboardState = KeyboardState.SHOWN;
       gcState.enableKeyboard = true;
       break;
     }
 
     case CurrentState.VIEW: {
-      console.log("KEYBOARD SHOULD BE DISABLED NOW")
+      gcState.name = `Lobby ${gameCode}`;
       gcState.enableKeyboard = false;
       if (hosting) {
         gcState.keyboardState = KeyboardState.BUTTON;
@@ -386,8 +397,7 @@ function handleChains(newChains: Chain[]) {
   currentChain = myChains.shift()!;
   finishedChains = 0;
   currentState = CurrentState.QUESTION;
-  messages.length = 0;
-  updateGCState();
+  updateMessages();
 }
 
 

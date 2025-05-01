@@ -73,6 +73,8 @@
     <div class="next">
       <button onclick={GameManager.nextChain}>Continue</button>
     </div>
+  {:else}
+    <div class="next"></div>
   {/if}
 
 </div>
