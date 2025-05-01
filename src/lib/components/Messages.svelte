@@ -30,6 +30,14 @@
         <div class={`message ${isMine(message) ? "mine" : "other"}`}>
           <p>{index == 1 ? (keyboardValue ?? message.text) : message.text}</p>
         </div>
+        {#if message.originalText}
+          <details class="ogMessage">
+            <summary>(Edited)</summary>
+            <div class={`message ${isMine(message) ? "mine" : "other"}`}>
+              <p>{message.originalText}</p>
+            </div>
+          </details>
+        {/if}
       </div>
     {:else}
       <p class="infoLine">{message.text}</p>
@@ -82,6 +90,15 @@
 
     &.other {
       background-color: #e0e0e0;
+    }
+  }
+
+  .ogMessage {
+    summary {
+      list-style: none;
+      user-select: none;
+      color: var(--msg-color);
+      cursor: pointer;
     }
   }
 

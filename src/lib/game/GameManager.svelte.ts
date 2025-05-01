@@ -274,9 +274,10 @@ export function nextChain() {
 }
 
 async function showChainAnimation(chain : Chain) {
-  const fakeMessage = { from: chain.question.from, text: chain.edit.text };
-  messages.push(fakeMessage);
-  await new Promise(f => setTimeout(f, 4000));
+  messages.push(chain.question)
+  await new Promise(f => setTimeout(f, 2000));
+  messages[messages.length-1] = { from: chain.question.from, text: chain.edit.text, originalText: chain.question.text };
+  await new Promise(f => setTimeout(f, 3000));
   messages.push(chain.answer);
   await new Promise(f => setTimeout(f, 300));
 

@@ -16,6 +16,7 @@ export type Chain = {
 export type Message = {
   from? : Player; // This should be a "User" type later
   text? : string;
+  originalText? : string;
 }
 
 export enum CurrentState {
