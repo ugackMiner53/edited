@@ -71,7 +71,10 @@ export default class WebsocketManager implements AbstractNetworkManager {
         break;
       }
 
-      case MessageType.CONTINUE:
+      case MessageType.SHOW: {
+        this.onShow?.(<UUID>message.data);
+        break;
+      }
       default: {
         console.error(`Message type ${message.type} not expected!`);
       }
@@ -122,9 +125,8 @@ export default class WebsocketManager implements AbstractNetworkManager {
     this.sendWebsocketMessage({ type: MessageType.EDIT, data: { chainID, edit } });
   }
 
-  sendShow(chainID: UUID) { }
-
-
-
+  sendShow(chainID: UUID) {
+    this.sendWebsocketMessage({ type: MessageType.SHOW, data: chainID });
+  }
 
 }

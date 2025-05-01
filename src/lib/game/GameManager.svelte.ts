@@ -99,6 +99,7 @@ export function handleMessage(message: string) {
       gcState.keyboardState = KeyboardState.BUTTON;
       if (currentChain?.chainId) networkManager.sendEdit(currentChain.chainId, message);
       finishedChains++;
+      checkChainsFinished();
       break;
     }
 
@@ -210,15 +211,20 @@ function bindServerFunctions() {
     if (chains.has(chainId)) chains.get(chainId)!.edit.text = message;
     if (chainId === currentChain?.chainId) updateMessages();
     finishedChains++;
+    checkChainsFinished();
+  }
+
+  networkManager.onShow = (chainId) => {
+    if (!chains.has(chainId)) return;
+    console.log(`Host says to show chain ${chainId}`);
+    const chain = chains.get(chainId)!;
+    gcState.keyboardState = KeyboardState.NONE;
+    showChainAnimation(chain);
   }
 }
 
 
 export function nextChain() {
-  if (currentState == CurrentState.VIEW) {
-
-    return;
-  }
   
   if (myChains.length > 0) {
     currentChain = myChains.shift()!;
@@ -226,11 +232,35 @@ export function nextChain() {
     currentChain = null;
   }
 
+  if (currentState == CurrentState.VIEW && currentChain != null && hosting) {
+    gcState.keyboardState = KeyboardState.NONE;
+    networkManager.sendShow(currentChain.chainId);
+    showChainAnimation(currentChain);
+    return;
+  }
+
+  if (currentState == CurrentState.EDIT) {
+    messages.length = 0;
+    messages.push({ text: "Welcome back to the lobby. The game will continue when everyone finishes." });
+  }
+
   currentState++;
   gcState.keyboardState = KeyboardState.SHOWN;
   updateMessages();
 }
 
+async function showChainAnimation(chain : Chain) {
+  console.log(chain);
+  const fakeMessage = { from: chain.question.from, text: chain.edit.text };
+  messages.push(fakeMessage);
+  await new Promise(f => setTimeout(f, 1000));
+  messages.push(chain.answer);
+  await new Promise(f => setTimeout(f, 300));
+
+  if (hosting) {
+    gcState.keyboardState = KeyboardState.BUTTON;
+  }
+}
 
 function updateMessages() {
   messages.length = 0;
@@ -241,21 +271,22 @@ function updateMessages() {
 
 function updateGCState() {
   
-  if (!currentChain) return;
-
   switch (currentState) {
     case CurrentState.QUESTION: {
+      if (!currentChain) return;
       gcState.name = currentChain.answer.from!.name;
       break;
     }
 
     case CurrentState.ANSWER: {
+      if (!currentChain) return;
       gcState.name = currentChain.question.from!.name;
       gcState.enableKeyboard = currentChain.question.text != null;
       break;
     }
 
     case CurrentState.EDIT: {
+      if (!currentChain) return;
       gcState.name = `${currentChain.question.from!.name} & ${currentChain.answer.from!.name}`;
       gcState.enableKeyboard = currentChain.question.text != null && currentChain.answer.text != null;
       break;
@@ -269,7 +300,12 @@ function updateGCState() {
     }
 
     case CurrentState.VIEW: {
+      console.log("KEYBOARD SHOULD BE DISABLED NOW")
       gcState.enableKeyboard = false;
+      if (hosting) {
+        gcState.keyboardState = KeyboardState.BUTTON;
+      }
+      break;
     }
   }
 }
@@ -336,8 +372,13 @@ function findMyChains(chains: Chain[]): Chain[] {
 
 function checkChainsFinished() {
   if (finishedChains >= chains.size) {
+    console.log("CHAINS FINISHED")
     // Game has finished
     currentState = CurrentState.VIEW;
+    messages.length = 0;
     messages.push({ text: "Now revealing messages" });
+    myChains = Array.from(chains.values());
+    updateGCState();
+    // myChains.sort((a, b) => a.chainId >= b.chainId ? 1 : -1);
   }
 }

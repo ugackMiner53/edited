@@ -37,5 +37,5 @@ export enum MessageType {
   QUESTION,
   ANSWER,
   EDIT,
-  CONTINUE
+  SHOW
 }
