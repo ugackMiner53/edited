@@ -15,6 +15,7 @@ export default interface AbstractNetworkManager {
   sendAnswer(chainID: UUID, answer: string): void;
   sendEdit(chainID: UUID, edit: string): void;
   sendShow(chainID: UUID): void;
+  sendLobby(): void;
 
   // Recievers
   onConnect?: () => void;
@@ -25,6 +26,7 @@ export default interface AbstractNetworkManager {
   onAnswer?: (chainID: UUID, answer: string) => void;
   onEdit?: (chainID: UUID, edit: string) => void;
   onShow?: (chainID: UUID) => void;
+  onLobby?: () => void;
   onPlayerLeave?: (player: Player) => void;
 
 }
@@ -37,5 +39,6 @@ export enum MessageType {
   QUESTION,
   ANSWER,
   EDIT,
-  SHOW
+  SHOW,
+  LOBBY
 }

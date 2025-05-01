@@ -1,3 +1,9 @@
+// VERY IMPORTANT TODO: REFACTOR HOST AND CLIENT TOGETHER
+// THE HOST CURRENTLY DUPLICATES A LOT OF CODE FROM CLIENT
+// AND THE TWO ARE LIKELY TO DESYNC
+// CREATE GENERIC METHODS INSTEAD
+
+
 import { PUBLIC_ADAPTER } from "$env/static/public";
 import { v6 as uuidv6 } from "uuid";
 
@@ -7,7 +13,7 @@ import { CurrentState, type Player, type Message, type UUID, type Chain, Keyboar
 
 export let currentState = CurrentState.DISCONNECTED;
 export const gcState = $state({ name: "Edited Game", keyboardState: KeyboardState.SHOWN, enableKeyboard: true })
-// , showKeyboard: true, enableKeyboard: true
+
 let networkManager: AbstractNetworkManager;
 let hosting = false;
 let gameCode: string;
@@ -32,7 +38,7 @@ export function handleMessage(message: string) {
 
     case CurrentState.DISCONNECTED: {
 
-      addMessage(message);
+      sendLocalMessage(message);
 
       // If this is the first message, it should become the player's name.
       if (myPlayer.name == "") {
@@ -59,7 +65,7 @@ export function handleMessage(message: string) {
 
     case CurrentState.LOBBY: {
       // Send message to group in lobby
-      addMessage(message);
+      sendLocalMessage(message);
 
       // Try to start the lobby if we're hosting.
       if (message.toUpperCase() == "START" && hosting) {
@@ -81,16 +87,18 @@ export function handleMessage(message: string) {
     }
 
     case CurrentState.QUESTION: {
-      addMessage(message);
+      sendLocalMessage(message);
       gcState.keyboardState = KeyboardState.BUTTON;
       if (currentChain?.chainId) networkManager.sendQuestion(currentChain.chainId, message);
+      if (currentChain) currentChain.question.text = message;
       break;
     }
 
     case CurrentState.ANSWER: {
-      addMessage(message);
+      sendLocalMessage(message);
       gcState.keyboardState = KeyboardState.BUTTON;
       if (currentChain?.chainId) networkManager.sendAnswer(currentChain.chainId, message);
+      if (currentChain) currentChain.answer.text = message;
       break;
     }
 
@@ -98,13 +106,14 @@ export function handleMessage(message: string) {
       messages[0].text = message;
       gcState.keyboardState = KeyboardState.BUTTON;
       if (currentChain?.chainId) networkManager.sendEdit(currentChain.chainId, message);
+      if (currentChain) currentChain.edit.text = message;
       finishedChains++;
       checkChainsFinished();
       break;
     }
 
     case CurrentState.WAIT: {
-      addMessage(message);
+      sendLocalMessage(message);
       networkManager.sendMessage(myPlayer, message);
       break;
     }
@@ -117,7 +126,7 @@ export function handleMessage(message: string) {
 
 
 // All this does is push a message **from myself** to the chat.
-function addMessage(message: string) {
+function sendLocalMessage(message: string) {
   messages.push({
     from: myPlayer,
     text: message
@@ -210,6 +219,7 @@ function bindServerFunctions() {
   networkManager.onEdit = (chainId, message) => {
     if (chains.has(chainId)) chains.get(chainId)!.edit.text = message;
     if (chainId === currentChain?.chainId) updateMessages();
+    console.log(`RECIEVED ${message} for chain ${chainId} which ${chains.has(chainId) ? 'does' : 'doesn\'t'} exist`)
     finishedChains++;
     checkChainsFinished();
   }
@@ -220,6 +230,15 @@ function bindServerFunctions() {
     const chain = chains.get(chainId)!;
     gcState.keyboardState = KeyboardState.NONE;
     showChainAnimation(chain);
+  }
+
+  networkManager.onLobby = () => {
+    chains.clear();
+    myChains = [];
+    currentChain = null;
+    finishedChains = 0;
+    currentState = CurrentState.LOBBY;
+    updateGCState();
   }
 }
 
@@ -232,16 +251,27 @@ export function nextChain() {
     currentChain = null;
   }
 
-  if (currentState == CurrentState.VIEW && currentChain != null && hosting) {
-    gcState.keyboardState = KeyboardState.NONE;
-    networkManager.sendShow(currentChain.chainId);
-    showChainAnimation(currentChain);
+
+  if (currentState == CurrentState.VIEW && hosting) {
+    if (currentChain != null) {
+      gcState.keyboardState = KeyboardState.NONE;
+      networkManager.sendShow(currentChain.chainId);
+      showChainAnimation(currentChain);
+    } else {
+      networkManager.sendLobby();
+      currentState = CurrentState.LOBBY;
+      updateGCState();
+    }
     return;
   }
 
   if (currentState == CurrentState.EDIT) {
+    console.log("Trying to add welcome message to WAIT message")
     messages.length = 0;
     messages.push({ text: "Welcome back to the lobby. The game will continue when everyone finishes." });
+    currentState = CurrentState.WAIT;
+    updateGCState();
+    return;
   }
 
   currentState++;
@@ -250,10 +280,9 @@ export function nextChain() {
 }
 
 async function showChainAnimation(chain : Chain) {
-  console.log(chain);
   const fakeMessage = { from: chain.question.from, text: chain.edit.text };
   messages.push(fakeMessage);
-  await new Promise(f => setTimeout(f, 1000));
+  await new Promise(f => setTimeout(f, 4000));
   messages.push(chain.answer);
   await new Promise(f => setTimeout(f, 300));
 
@@ -295,6 +324,7 @@ function updateGCState() {
     case CurrentState.LOBBY:
     case CurrentState.WAIT: {
       gcState.name = `Lobby ${gameCode}`;
+      gcState.keyboardState =KeyboardState.SHOWN;
       gcState.enableKeyboard = true;
       break;
     }
@@ -304,6 +334,8 @@ function updateGCState() {
       gcState.enableKeyboard = false;
       if (hosting) {
         gcState.keyboardState = KeyboardState.BUTTON;
+      } else {
+        gcState.keyboardState = KeyboardState.NONE;
       }
       break;
     }

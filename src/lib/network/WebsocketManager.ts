@@ -21,6 +21,7 @@ export default class WebsocketManager implements AbstractNetworkManager {
   onAnswer?: (chainID: UUID, answer: string) => void;
   onEdit?: (chainID: UUID, edit: string) => void;
   onShow?: (chainID: UUID) => void;
+  onLobby?: () => void;
   onPlayerLeave?: (player: Player) => void;
 
   async connectToWebsocket(): Promise<void> {
@@ -75,6 +76,12 @@ export default class WebsocketManager implements AbstractNetworkManager {
         this.onShow?.(<UUID>message.data);
         break;
       }
+
+      case MessageType.LOBBY: {
+        this.onLobby?.();
+        break;
+      }
+
       default: {
         console.error(`Message type ${message.type} not expected!`);
       }
@@ -127,6 +134,10 @@ export default class WebsocketManager implements AbstractNetworkManager {
 
   sendShow(chainID: UUID) {
     this.sendWebsocketMessage({ type: MessageType.SHOW, data: chainID });
+  }
+
+  sendLobby() {
+    this.sendWebsocketMessage({ type: MessageType.LOBBY, data: undefined });
   }
 
 }

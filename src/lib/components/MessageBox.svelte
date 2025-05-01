@@ -42,6 +42,10 @@
       input {
         flex-grow: 1;
         font-size: 1rem;
+
+        &:disabled {
+          cursor: not-allowed;
+        }
       }
 
       button {

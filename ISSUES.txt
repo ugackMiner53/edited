@@ -1,0 +1,3 @@
+If players submit such that host is the last to submit, the game can enter a state where everyone else is okay, but the host is stuck in CurrentState.WAIT
+
+

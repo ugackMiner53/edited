@@ -71,7 +71,7 @@
     <MessageBox bind:keyboardValue={keyboardValue} sendMessage={sendMessage} enableKeyboard={GameManager.gcState.enableKeyboard} />
   {:else if GameManager.gcState.keyboardState == KeyboardState.BUTTON}
     <div class="next">
-      <button onclick={GameManager.nextChain}>Next Conversation</button>
+      <button onclick={GameManager.nextChain}>Continue</button>
     </div>
   {/if}
 
