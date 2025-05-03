@@ -5,7 +5,7 @@ import type AbstractNetworkManager from "$lib/network/NetworkManager";
 import WebsocketManager from "$lib/network/WebsocketManager";
 import { CurrentState, type Player, type Message, type UUID, type Chain, KeyboardState } from "$lib/Types";
 
-export let currentState = CurrentState.DISCONNECTED;
+export let currentState = $state({state: CurrentState.DISCONNECTED});
 export const gcState = $state({ name: "Edited Game", keyboardState: KeyboardState.SHOWN, enableKeyboard: true })
 
 let networkManager: AbstractNetworkManager;
@@ -28,7 +28,7 @@ export const messages: Message[] = $state([
 
 export function handleMessage(message: string) {
 
-  switch (currentState) {
+  switch (currentState.state) {
 
     case CurrentState.DISCONNECTED: {
 
@@ -114,7 +114,7 @@ export function handleMessage(message: string) {
     }
 
     default: {
-      console.error(`Invalid message ${message} sent during ${currentState} state!`);
+      console.error(`Invalid message ${message} sent during ${currentState.state} state!`);
     }
   }
 }
@@ -161,7 +161,7 @@ function bindServerFunctions() {
   networkManager.onConnect = () => {
     console.log("Trying to send self")
     networkManager.sendSelf(myPlayer);
-    currentState = CurrentState.LOBBY;
+    currentState.state = CurrentState.LOBBY;
 
     messages.push(
       { text: `Connected to lobby ${gameCode}` }
@@ -179,7 +179,7 @@ function bindServerFunctions() {
   networkManager.onPlayerJoin = (newPlayer) => {
     players.push(newPlayer);
 
-    if (currentState == CurrentState.LOBBY) {
+    if (currentState.state == CurrentState.LOBBY) {
       messages.push(
         { text: `${newPlayer.name} joined the group chat` }
       );
@@ -188,7 +188,7 @@ function bindServerFunctions() {
 
   // When sending a lobby message, display message.
   networkManager.onMessage = (player, message) => {
-    if (currentState == CurrentState.LOBBY || currentState == CurrentState.WAIT) {
+    if (currentState.state == CurrentState.LOBBY || currentState.state == CurrentState.WAIT) {
       messages.push(
         { from: player, text: message }
       );
@@ -232,7 +232,7 @@ function bindServerFunctions() {
     myChains = [];
     currentChain = null;
     finishedChains = 0;
-    currentState = CurrentState.LOBBY;
+    currentState.state = CurrentState.LOBBY;
     updateGCState();
   }
 }
@@ -247,28 +247,28 @@ export function nextChain() {
   }
 
 
-  if (currentState == CurrentState.VIEW && hosting) {
+  if (currentState.state == CurrentState.VIEW && hosting) {
     if (currentChain != null) {
       gcState.keyboardState = KeyboardState.NONE;
       networkManager.sendShow(currentChain.chainId);
       showChainAnimation(currentChain);
     } else {
       networkManager.sendLobby();
-      currentState = CurrentState.LOBBY;
+      currentState.state = CurrentState.LOBBY;
       updateGCState();
     }
     return;
   }
 
-  if (currentState == CurrentState.EDIT) {
+  if (currentState.state == CurrentState.EDIT) {
     messages.length = 0;
     messages.push({ text: "Welcome back to the lobby. The game will continue when everyone finishes." });
-    currentState = CurrentState.WAIT;
+    currentState.state = CurrentState.WAIT;
     updateGCState();
     return;
   }
 
-  currentState++;
+  currentState.state++;
   gcState.keyboardState = KeyboardState.SHOWN;
   updateMessages();
 }
@@ -289,7 +289,7 @@ async function showChainAnimation(chain : Chain) {
 function updateMessages() {
   messages.length = 0;
 
-  switch (currentState) {
+  switch (currentState.state) {
     case CurrentState.QUESTION: {
       messages.push({ text: `Ask ${currentChain?.answer.from?.name ?? "them"} a question!` })
       break;
@@ -312,7 +312,7 @@ function updateMessages() {
 
 function updateGCState() {
   
-  switch (currentState) {
+  switch (currentState.state) {
     case CurrentState.QUESTION: {
       if (!currentChain) return;
       gcState.name = currentChain.answer.from!.name;
@@ -397,7 +397,7 @@ function handleChains(newChains: Chain[]) {
   myChains = findMyChains(newChains);
   currentChain = myChains.shift()!;
   finishedChains = 0;
-  currentState = CurrentState.QUESTION;
+  currentState.state = CurrentState.QUESTION;
   updateMessages();
 }
 
@@ -417,7 +417,7 @@ function checkChainsFinished() {
   if (finishedChains >= chains.size) {
     console.log("CHAINS FINISHED")
     // Game has finished
-    currentState = CurrentState.VIEW;
+    currentState.state = CurrentState.VIEW;
     messages.length = 0;
     messages.push({ text: "Now revealing messages" });
     myChains = Array.from(chains.values());

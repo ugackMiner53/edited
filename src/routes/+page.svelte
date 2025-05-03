@@ -9,7 +9,7 @@
 
   let keyboardValue : string = $state("")
 
-  let topMessage = $derived((GameManager.currentState == CurrentState.EDIT && keyboardValue != "") ? keyboardValue : null);
+  let topMessage = $derived((GameManager.currentState.state == CurrentState.EDIT && keyboardValue != "") ? keyboardValue : null);
 
   function sendMessage(message : string) {
     GameManager.handleMessage(message);
