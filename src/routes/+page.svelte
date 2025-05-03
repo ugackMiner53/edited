@@ -5,14 +5,12 @@
   import Messages from "$lib/components/Messages.svelte";
   import MessageBox from "$lib/components/MessageBox.svelte";
   import * as GameManager from "$lib/game/GameManager.svelte";
-    import { CurrentState, KeyboardState } from "$lib/Types";
+  import { CurrentState, KeyboardState } from "$lib/Types";
 
   let keyboardValue : string = $state("")
 
   let topMessage = $derived((GameManager.currentState == CurrentState.EDIT && keyboardValue != "") ? keyboardValue : null);
 
-  $effect(() => {topMessage})
-  
   function sendMessage(message : string) {
     GameManager.handleMessage(message);
     keyboardValue = "";
@@ -71,7 +69,7 @@
     <MessageBox bind:keyboardValue={keyboardValue} sendMessage={sendMessage} enableKeyboard={GameManager.gcState.enableKeyboard} />
   {:else if GameManager.gcState.keyboardState == KeyboardState.BUTTON}
     <div class="next">
-      <button onclick={GameManager.nextChain}>Continue</button>
+      <button autofocus onclick={GameManager.nextChain}>Continue</button>
     </div>
   {:else}
     <div class="next"></div>

@@ -58,6 +58,11 @@
         color: white;
         font-size: 1rem;
         font-weight: bold;
+
+        &:disabled {
+          background-color: gray;
+          cursor: not-allowed;
+        }
       }
     }
   }
@@ -103,8 +108,8 @@
 
 
 <div class="messager">
-  <form class="sendbar" onsubmit={() => sendMessage(keyboardValue)}>
-    <input type="text" placeholder="Send Message" class="messagebox" disabled={!enableKeyboard} bind:value={keyboardValue} onkeypress={(keyEvent) => {keyPressAnimation(keyEvent.key.toUpperCase())}} />
+  <form class="sendbar" onsubmit={() => {sendMessage(keyboardValue);}}>
+    <input type="text" placeholder="Send Message" class="messagebox" autofocus disabled={!enableKeyboard} bind:value={keyboardValue} onkeypress={(keyEvent) => {keyPressAnimation(keyEvent.key.toUpperCase())}} />
 
     <button type="submit" disabled={!enableKeyboard}>
       ↑
