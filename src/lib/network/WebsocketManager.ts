@@ -82,6 +82,11 @@ export default class WebsocketManager implements AbstractNetworkManager {
         break;
       }
 
+      case MessageType.DISCONNECT: {
+        this.onPlayerLeave?.(<Player>message.data);
+        break;
+      }
+
       default: {
         console.error(`Message type ${message.type} not expected!`);
       }

@@ -235,6 +235,23 @@ function bindServerFunctions() {
     currentState.state = CurrentState.LOBBY;
     updateGCState();
   }
+
+  networkManager.onPlayerLeave = (player) => {
+    console.log(`Server says that ${player.name} left game...`);
+    // const playerIndex = players.indexOf(player);
+    const playerIndex = players.findIndex(knownPlayer => knownPlayer.uuid === player.uuid);
+    if (playerIndex != -1) {
+      players.splice(playerIndex, 1);
+      console.log(`Removed ${player.name} from player list!`);
+    } else {
+      console.log("But I've never heard of them before!");
+    }
+
+    if (currentState.state == CurrentState.LOBBY || currentState.state == CurrentState.WAIT) {
+      messages.push({ text: `${player.name} left the group chat` });
+    }
+
+  }
 }
 
 

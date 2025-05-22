@@ -33,6 +33,7 @@ export default interface AbstractNetworkManager {
 
 export enum MessageType {
   CONNECT,
+  DISCONNECT,
   JOIN,
   MESSAGE,
   CHAINS,
