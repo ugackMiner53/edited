@@ -35,6 +35,7 @@
 		]
 	},
 	"dependencies": {
+		"trystero": "^0.21.6",
 		"uuid": "^11.1.0"
 	}
 }

@@ -4,6 +4,7 @@ import { v6 as uuidv6 } from "uuid";
 import type AbstractNetworkManager from "$lib/network/NetworkManager";
 import WebsocketManager from "$lib/network/WebsocketManager";
 import { CurrentState, type Player, type Message, type UUID, type Chain, KeyboardState } from "$lib/Types";
+import TrysteroManager from "$lib/network/TrysteroManager";
 
 export let currentState = $state({ state: CurrentState.DISCONNECTED });
 export const gcState = $state({ name: "Edited Game", keyboardState: KeyboardState.SHOWN, enableKeyboard: true })
@@ -132,19 +133,20 @@ function connectToServer(code: string) {
 
   if (code.startsWith('T') || PUBLIC_ADAPTER == "trystero") {
     // Try connecting via trystero
+    networkManager = new TrysteroManager();
   } else if (PUBLIC_ADAPTER == "websocket") {
     // Try connecting via websocket
     networkManager = new WebsocketManager();
-
-    if (code.toUpperCase() == "CREATE") {
-      gameCode = networkManager.createNewRoom();
-      hosting = true;
-    } else if (!Number.isNaN(parseInt(code))) { // Remove this check if you want codes to not be just numbers
-      networkManager.connectToRoom(code);
-      gameCode = code;
-    }
   } else {
-    throw Error("Cannot connect with trystero or websockets")
+    throw Error(`Adapter type ${PUBLIC_ADAPTER} not implemented!`);
+  }
+
+  if (code.toUpperCase().includes("CREATE")) {
+    gameCode = networkManager.createNewRoom();
+    hosting = true;
+  } else {
+    networkManager.connectToRoom(code);
+    gameCode = code;
   }
 
   bindServerFunctions();
