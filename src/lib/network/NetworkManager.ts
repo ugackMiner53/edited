@@ -10,6 +10,7 @@ export default interface AbstractNetworkManager {
 
   // Senders
   sendSelf(self: Player): void;
+  sendPlayers(players: Player[]): void;
   sendChains(chains: Chain[]) : void;
   sendQuestion(chainID: UUID, question: string): void;
   sendAnswer(chainID: UUID, answer: string): void;
@@ -19,6 +20,7 @@ export default interface AbstractNetworkManager {
 
   // Recievers
   onConnect?: () => void;
+  onPlayers?: (players: Player[]) => void;
   onPlayerJoin?: (player: Player) => void;
   onMessage?: (player: Player, message: string) => void;
   onChains?: (chains: Chain[]) => void;
@@ -35,6 +37,7 @@ export enum MessageType {
   CONNECT,
   DISCONNECT,
   JOIN,
+  PLAYERS,
   MESSAGE,
   CHAINS,
   QUESTION,

@@ -5,7 +5,7 @@ import type AbstractNetworkManager from "$lib/network/NetworkManager";
 import WebsocketManager from "$lib/network/WebsocketManager";
 import { CurrentState, type Player, type Message, type UUID, type Chain, KeyboardState } from "$lib/Types";
 
-export let currentState = $state({state: CurrentState.DISCONNECTED});
+export let currentState = $state({ state: CurrentState.DISCONNECTED });
 export const gcState = $state({ name: "Edited Game", keyboardState: KeyboardState.SHOWN, enableKeyboard: true })
 
 let networkManager: AbstractNetworkManager;
@@ -13,9 +13,7 @@ let hosting = false;
 let gameCode: string;
 export const myPlayer: Player = { uuid: <UUID>uuidv6(), name: "" }
 
-// This is only really important for the host to know, clients can desync on this
-const players: Player[] = [myPlayer];
-
+let players: Player[] = [myPlayer];
 let chains = new Map<UUID, Chain>();
 let finishedChains = 0;
 let myChains: Chain[];
@@ -184,6 +182,19 @@ function bindServerFunctions() {
         { text: `${newPlayer.name} joined the group chat` }
       );
     }
+
+    if (hosting) {
+      console.log("Sending players to clients!");
+      networkManager.sendPlayers(players);
+    }
+  }
+
+  networkManager.onPlayers = (remotePlayers) => {
+    if (!hosting) {
+      console.log(`Updating players from host!`);
+      players = remotePlayers;
+      console.log(players)
+    }
   }
 
   // When sending a lobby message, display message.
@@ -240,6 +251,7 @@ function bindServerFunctions() {
     console.log(`Server says that ${player.name} left game...`);
     // const playerIndex = players.indexOf(player);
     const playerIndex = players.findIndex(knownPlayer => knownPlayer.uuid === player.uuid);
+    console.log(`Their player index was ${playerIndex}`);
     if (playerIndex != -1) {
       players.splice(playerIndex, 1);
       console.log(`Removed ${player.name} from player list!`);
@@ -251,12 +263,29 @@ function bindServerFunctions() {
       messages.push({ text: `${player.name} left the group chat` });
     }
 
+    if (playerIndex == 0) {
+      console.warn("oh no, because player index == 0, that was probably the host who left");
+
+      // Try to determine new host based on uuid
+      players.sort((a, b) => (a.uuid < b.uuid) ? -1 : (a.uuid > b.uuid) ? 1 : 0);
+
+      // The new first player becomes the host
+      if (players[0].uuid == myPlayer.uuid) {
+        hosting = true;
+        messages.push(
+          { text: "You're the new host!" }
+        );
+        updateGCState();
+      }
+      
+    }
+
   }
 }
 
 
 export function nextChain() {
-  
+
   if (myChains.length > 0) {
     currentChain = myChains.shift()!;
   } else {
@@ -290,10 +319,10 @@ export function nextChain() {
   updateMessages();
 }
 
-async function showChainAnimation(chain : Chain) {
+async function showChainAnimation(chain: Chain) {
   messages.push(chain.question)
   await new Promise(f => setTimeout(f, 2000));
-  messages[messages.length-1] = { from: chain.question.from, text: chain.edit.text, originalText: chain.question.text };
+  messages[messages.length - 1] = { from: chain.question.from, text: chain.edit.text, originalText: chain.question.text };
   await new Promise(f => setTimeout(f, 3000));
   messages.push(chain.answer);
   await new Promise(f => setTimeout(f, 300));
@@ -320,7 +349,7 @@ function updateMessages() {
       break;
     }
   }
-  
+
   if (currentChain?.question.text) messages.push(currentChain.question);
   if (currentChain?.answer.text) messages.push(currentChain.answer);
 
@@ -328,7 +357,7 @@ function updateMessages() {
 }
 
 function updateGCState() {
-  
+
   switch (currentState.state) {
     case CurrentState.QUESTION: {
       if (!currentChain) return;

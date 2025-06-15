@@ -14,6 +14,7 @@ export default class WebsocketManager implements AbstractNetworkManager {
 
   // Reciever methods that are reassigned by GameManager
   onConnect?: () => void;
+  onPlayers?: (players: Player[]) => void;
   onPlayerJoin?: (player: Player) => void;
   onMessage?: (player: Player, message: string) => void;
   onChains?: (chains: Chain[]) => void;
@@ -44,6 +45,10 @@ export default class WebsocketManager implements AbstractNetworkManager {
       }
       case MessageType.JOIN: {
         this.onPlayerJoin?.(<Player>message.data);
+        break;
+      }
+      case MessageType.PLAYERS: {
+        this.onPlayers?.(<Player[]>message.data);
         break;
       }
       case MessageType.MESSAGE: {
@@ -115,6 +120,10 @@ export default class WebsocketManager implements AbstractNetworkManager {
   // Senders
   sendSelf(self: Player) {
     this.sendWebsocketMessage({ type: MessageType.JOIN, data: self })
+  }
+
+  sendPlayers(players: Player[]) {
+    this.sendWebsocketMessage({ type: MessageType.PLAYERS, data: players })
   }
 
   sendMessage(self: Player, message: string) {
