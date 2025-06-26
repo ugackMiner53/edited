@@ -44,13 +44,21 @@
     color: white;
     font-weight: bold;
     line-height: 1.5;
+
+    &.logo {
+      background: url(/favicon.svg);
+      background-size: cover;
+      color: rgba(0, 0, 0, 0);
+    }
   }
 
 </style>
 
 <div class="header">
   
-  <span class="pfp">{pickBestLetters()}</span>
+  <span class="pfp {name == 'Edited Game' ? 'logo' : ''}">
+      {pickBestLetters()}
+  </span>
   <span class="name">{name}</span>
   
 </div>

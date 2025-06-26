@@ -60,6 +60,9 @@
 
 </style>
 
+<svelte:head>
+  <title>(edited) Game</title>
+</svelte:head>
 
 <div class={`container ${PUBLIC_ADAPTER == "trystero" ? "p2p" : ""}`}>
 
