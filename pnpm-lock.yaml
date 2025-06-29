@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@sveltejs/adapter-static':
+        specifier: ^3.0.8
+        version: 3.0.8(@sveltejs/kit@https://pkg.pr.new/sveltejs/kit/@sveltejs/kit@b625c85(@sveltejs/vite-plugin-svelte@5.0.3(svelte@5.26.1)(vite@6.2.6(@types/node@24.0.4)(sass@1.86.3)))(svelte@5.26.1)(vite@6.2.6(@types/node@24.0.4)(sass@1.86.3)))
       trystero:
         specifier: ^0.21.6
         version: 0.21.6(@multiformats/multiaddr@12.5.1)
@@ -935,6 +938,12 @@ packages:
     version: 5.2.12
     peerDependencies:
       '@sveltejs/kit': ^2.4.0
+
+  '@sveltejs/adapter-static@3.0.8':
+    resolution: {integrity: sha512-YaDrquRpZwfcXbnlDsSrBQNCChVOT9MGuSg+dMAyfsAa1SmiAhrA5jUYUiIMC59G92kIbY/AaQOWcBdq+lh+zg==}
+    version: 3.0.8
+    peerDependencies:
+      '@sveltejs/kit': ^2.0.0
 
   '@sveltejs/kit@https://pkg.pr.new/sveltejs/kit/@sveltejs/kit@b625c85':
     resolution: {tarball: https://pkg.pr.new/sveltejs/kit/@sveltejs/kit@b625c85}
@@ -3284,6 +3293,10 @@ snapshots:
       '@rollup/plugin-node-resolve': 16.0.1(rollup@4.39.0)
       '@sveltejs/kit': https://pkg.pr.new/sveltejs/kit/@sveltejs/kit@b625c85(@sveltejs/vite-plugin-svelte@5.0.3(svelte@5.26.1)(vite@6.2.6(@types/node@24.0.4)(sass@1.86.3)))(svelte@5.26.1)(vite@6.2.6(@types/node@24.0.4)(sass@1.86.3))
       rollup: 4.39.0
+
+  '@sveltejs/adapter-static@3.0.8(@sveltejs/kit@https://pkg.pr.new/sveltejs/kit/@sveltejs/kit@b625c85(@sveltejs/vite-plugin-svelte@5.0.3(svelte@5.26.1)(vite@6.2.6(@types/node@24.0.4)(sass@1.86.3)))(svelte@5.26.1)(vite@6.2.6(@types/node@24.0.4)(sass@1.86.3)))':
+    dependencies:
+      '@sveltejs/kit': https://pkg.pr.new/sveltejs/kit/@sveltejs/kit@b625c85(@sveltejs/vite-plugin-svelte@5.0.3(svelte@5.26.1)(vite@6.2.6(@types/node@24.0.4)(sass@1.86.3)))(svelte@5.26.1)(vite@6.2.6(@types/node@24.0.4)(sass@1.86.3))
 
   '@sveltejs/kit@https://pkg.pr.new/sveltejs/kit/@sveltejs/kit@b625c85(@sveltejs/vite-plugin-svelte@5.0.3(svelte@5.26.1)(vite@6.2.6(@types/node@24.0.4)(sass@1.86.3)))(svelte@5.26.1)(vite@6.2.6(@types/node@24.0.4)(sass@1.86.3))':
     dependencies:

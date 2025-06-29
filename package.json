@@ -35,6 +35,7 @@
 		]
 	},
 	"dependencies": {
+		"@sveltejs/adapter-static": "^3.0.8",
 		"trystero": "^0.21.6",
 		"uuid": "^11.1.0"
 	}
