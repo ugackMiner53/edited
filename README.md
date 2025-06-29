@@ -1,38 +1,56 @@
-# sv
+# <img src="./static/favicon.svg" width="32" alt="Edited Logo" /> Edited
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+<sup>Ask, answer, edit, repeat.</sup>
 
-## Creating a project
+<!-- [Try the demo online!](https://ugackMiner53.github.io/edited) -->
 
-If you're seeing this, you've probably already done this step. Congrats!
+Edited is a game about changing your friends' questions
+so that their answers look *as bad as possible*.
 
-```bash
-# create a new project in the current directory
-npx sv create
 
-# create a new project in my-app
-npx sv create my-app
+## Setup
+
+You should be able to play the game via [trystero](https://github.com/dmotz/trystero),
+a peer-to-peer connection system that uses public infrastructure to connect players.
+
+However, trystero can take quite a while to connect, and some players may face invisible
+connection issues based on their network setup and firewall policies.
+Because of this, trystero connections use green bubbles.
+
+If you'd like better connection times, along with __blue bubbles__,
+you can try self-hosting Edited with Websockets!
+
+
+## Self-Hosting
+
+To self-host Edited, make sure that you have a Javascript runtime and packager installed
+(`npm`, `pnpm`, `bun`), and the code downloaded.
+
+```console
+> pnpm install
+
+> pnpm run build
+
+> pnpm run preview
 ```
 
-## Developing
+The server should then be available on port 4173 by default, but that can be reconfigured
+and/or manually run from the `build/` folder.
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+If you're hosting Edited on your own server, make sure to update the OpenGraph
+URLs in `src/app.html` to use your website instead of the default one.
 
-```bash
-npm run dev
+You can also edit the configuration in `.env` if you'd like a different PIN length
+or (for some reason) to self-host the trystero networking method.
 
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
 
-## Building
+## Credits (and Contributing)
 
-To create a production version of your app:
+Thanks a ton to all of the people over the last four years who have been a part
+of testing this game through all of its iterations.
+From my closest friends to the random strangers who agreed to try it, you've
+all been a part of making this a better game, and I thank you.
 
-```bash
-npm run build
-```
+If you'd like to contribute to Edited, you can [open a Pull Request](https://github.com/ugackMiner53/edited/pulls)
+with your contributions, or [create an Issue](https://github.com/ugackMiner53/edited/issues) with your request!
 
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
