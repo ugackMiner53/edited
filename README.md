@@ -2,7 +2,7 @@
 
 <sup>Ask, answer, edit, repeat.</sup>
 
-<!-- [Try the demo online!](https://ugackMiner53.github.io/edited) -->
+[Try the demo online!](https://ugackMiner53.github.io/edited)
 
 Edited is a game about changing your friends' questions
 so that their answers look *as bad as possible*.
